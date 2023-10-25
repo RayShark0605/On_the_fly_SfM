@@ -188,6 +188,11 @@ size_t CRAMDatabase::AddImage(const CImage& image)
 	const size_t imageID = images.size();
 	images[imageID] = image;
 	images[imageID].SetImageID(imageID);
+
+	const size_t cameraID = images[imageID].GetCameraID();
+	CHECK(cameras.find(cameraID) != cameras.end());
+	images[imageID].Setup(cameras[cameraID]);
+
 	return imageID;
 }
 
@@ -491,6 +496,22 @@ size_t CRAMDatabase::GetTwoViewGeometryImagesNum(size_t imageID) const
 		}
 	}
 	return count;
+}
+unordered_map<pair<size_t, size_t>, size_t, MatchPairHash, MatchPairEqual> CRAMDatabase::GetAllCorrespondences() const
+{
+	unordered_map<pair<size_t, size_t>, size_t, MatchPairHash, MatchPairEqual> correspondences;
+	correspondences.reserve(twoViewGeometries.size());
+	for (const auto& pair : twoViewGeometries)
+	{
+		const size_t imageID1 = pair.first;
+		for (const auto& pair2 : pair.second)
+		{
+			const size_t imageID2 = pair2.first;
+			CHECK(imageID1 < imageID2);
+			correspondences[make_pair(imageID1, imageID2)] = pair2.second.inlierMatches.size();
+		}
+	}
+	return correspondences;
 }
 void CRAMDatabase::SaveAsDir(const string& dirPath) const
 {

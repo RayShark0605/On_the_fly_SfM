@@ -3,13 +3,30 @@
 using namespace std;
 
 
-CModel::CModel(size_t modelID, CDatabase* database) :database(database)
+CModel::CModel(size_t modelID, CDatabase* database, const COptions& options) :database(database)
 {
 	CHECK(database);
+	options.Check();
+
 	this->modelID = modelID;
 	regImageIDs.clear();
 	points3D.clear();
 	nextPoint3DID = 0;
+
+	const unordered_map<pair<size_t, size_t>, size_t, MatchPairHash, MatchPairEqual> correspondences = database->GetAllCorrespondences();
+	for (const auto& pair : correspondences)
+	{
+		const size_t imageID1 = pair.first.first;
+		const size_t imageID2 = pair.first.second;
+		const size_t numCorrespondences = pair.second;
+		if (numCorrespondences >= options.reconstructionOptions.minNumMatches)
+		{
+			CHECK(imageID1 < imageID2);
+			CImagePairStatus imagePairStatus;
+			imagePairStatus.numTotalCorrs = numCorrespondences;
+			imagePairs[pair.first] = imagePairStatus;
+		}
+	}
 }
 unordered_set<size_t> CModel::GetAllPoints3D() const
 {
@@ -364,7 +381,7 @@ void CModel::UpdatePoint3DErrors()
 		pair.second.SetError(errorSum / trackElements.size());
 	}
 }
-bool CModel::ExtractColorsForImage(size_t imageID, const std::string& imagePath)
+bool CModel::ExtractColorsForImage(size_t imageID, const string& imagePath)
 {
 	CHECK(database);
 	if (!IsFileExists(imagePath))
@@ -548,7 +565,7 @@ size_t CModel::FilterPoints3DWithSmallTriangulationAngle(double minTriAngle, con
 	}
 	return numFiltered;
 }
-size_t CModel::FilterPoints3DWithLargeReprojectionError(double maxReprojectionError, const std::unordered_set<size_t>& points3DID)
+size_t CModel::FilterPoints3DWithLargeReprojectionError(double maxReprojectionError, const unordered_set<size_t>& points3DID)
 {
 	CHECK(database);
 
@@ -601,7 +618,65 @@ size_t CModel::FilterPoints3DWithLargeReprojectionError(double maxReprojectionEr
 	}
 	return numFiltered;
 }
+tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Vector3d> CModel::ComputeBoundsAndCentroid(double p0, double p1, bool isUseImages) const
+{
+	CHECK(p0 >= 0 && p0 <= 1 && p1 >= 0 && p1 <= 1 && p0 <= p1);
+	const size_t numElements = (isUseImages ? regImageIDs.size() : points3D.size());
+	if (numElements == 0)
+	{
+		return make_tuple(Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(0, 0, 0));
+	}
+	vector<float> coordsX;
+	vector<float> coordsY;
+	vector<float> coordsZ;
+	if (isUseImages)
+	{
+		coordsX.reserve(regImageIDs.size());
+		coordsY.reserve(regImageIDs.size());
+		coordsZ.reserve(regImageIDs.size());
+		for (size_t imageID : regImageIDs)
+		{
+			const Eigen::Vector3d projectionCenter = database->GetImage(imageID).GetProjectionCenter(modelID);
+			coordsX.push_back(projectionCenter(0));
+			coordsY.push_back(projectionCenter(1));
+			coordsZ.push_back(projectionCenter(2));
+		}
+	}
+	else
+	{
+		coordsX.reserve(points3D.size());
+		coordsY.reserve(points3D.size());
+		coordsZ.reserve(points3D.size());
+		for (const auto& point3D : points3D) 
+		{
+			coordsX.push_back(point3D.second.GetX());
+			coordsY.push_back(point3D.second.GetY());
+			coordsZ.push_back(point3D.second.GetZ());
+		}
+	}
 
+	sort(coordsX.begin(), coordsX.end());
+	sort(coordsY.begin(), coordsY.end());
+	sort(coordsZ.begin(), coordsZ.end());
+
+	const size_t P0 = static_cast<size_t>((coordsX.size() > 3) ? p0 * (coordsX.size() - 1) : 0);
+	const size_t P1 = static_cast<size_t>((coordsX.size() > 3) ? p1 * (coordsX.size() - 1) : coordsX.size() - 1);
+
+	const Eigen::Vector3d bboxMin(coordsX[P0], coordsY[P0], coordsZ[P0]);
+	const Eigen::Vector3d bboxMax(coordsX[P1], coordsY[P1], coordsZ[P1]);
+
+	Eigen::Vector3d meanCoord(0, 0, 0);
+	for (size_t i = P0; i <= P1; i++)
+	{
+
+		meanCoord(0) += coordsX[i];
+		meanCoord(1) += coordsY[i];
+		meanCoord(2) += coordsZ[i];
+	}
+	meanCoord /= P1 - P0 + 1;
+
+	return make_tuple(bboxMin, bboxMax, meanCoord);
+}
 
 
 

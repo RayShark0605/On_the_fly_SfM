@@ -17,7 +17,7 @@ using CImagePairsType = std::unordered_map<std::pair<size_t, size_t>, CImagePair
 class CModel final
 {
 public:
-	CModel(size_t modelID, CDatabase* database);
+	CModel(size_t modelID, CDatabase* database, const COptions& options);
 
 	inline size_t GetModelID() const
 	{

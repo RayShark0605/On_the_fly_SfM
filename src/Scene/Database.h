@@ -61,6 +61,8 @@ public:
 	virtual void AddTwoViewGeometry(size_t imageID1, size_t imageID2, const CTwoViewGeometry& twoViewGeometry) = 0;
 	virtual size_t GetTwoViewGeometryImagesNum(size_t imageID) const = 0;
 
+	virtual std::unordered_map<std::pair<size_t, size_t>, size_t, MatchPairHash, MatchPairEqual> GetAllCorrespondences() const = 0;
+
 	virtual void SaveAsDir(const std::string& dirPath) const = 0;
 };
 
@@ -116,6 +118,8 @@ public:
 	std::unordered_map<size_t, std::unordered_map<size_t, CTwoViewGeometry>> GetAllTwoViewGeometries() const override;
 	void AddTwoViewGeometry(size_t imageID1, size_t imageID2, const CTwoViewGeometry& twoViewGeometry) override;
 	size_t GetTwoViewGeometryImagesNum(size_t imageID) const override;
+
+	std::unordered_map<std::pair<size_t, size_t>, size_t, MatchPairHash, MatchPairEqual> GetAllCorrespondences() const override;
 
 	void SaveAsDir(const std::string& dirPath) const override;
 

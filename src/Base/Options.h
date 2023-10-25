@@ -236,6 +236,28 @@ struct CEstimateTriangulationOptions final :public CBaseOptions
 	}
 };
 
+// 重建选项参数
+struct CReconstructionOptions final :public CBaseOptions
+{
+	size_t minNumMatches = 15;      // 被认为有效的最少匹配数
+	size_t maxModelOverlap = 3;     // 子模型之间的最大重叠影像数, 20
+	size_t minModelSize = 5;        // 一个子模型所需的最少注册影像数
+	size_t numInitialTrials = 20;   // 初始化模型的尝试次数
+
+	// 用于过滤具有退化内参的图像的阈值
+	double minFocalLengthRatio = 0.1;
+	double maxFocalLengthRatio = 10;
+	double maxExtraParam = 1;
+
+	inline void Check() const override
+	{
+		CHECK(minNumMatches > 0);
+		CHECK(maxModelOverlap > 0);
+		CHECK(minModelSize > 0);
+		CHECK(numInitialTrials > 0);
+	}
+};
+
 
 struct COptions final : public CBaseOptions
 {
@@ -244,7 +266,7 @@ struct COptions final : public CBaseOptions
 	CRANSACOptions RANSACOptions;
 	CTwoViewGeometryOptions twoViewGeometryOptions;
 	CEstimateTriangulationOptions estimateTriangulationOptions;
-
+	CReconstructionOptions reconstructionOptions;
 
 	inline void Check() const override
 	{
@@ -253,6 +275,7 @@ struct COptions final : public CBaseOptions
 		RANSACOptions.Check();
 		twoViewGeometryOptions.Check();
 		estimateTriangulationOptions.Check();
+		reconstructionOptions.Check();
 	}
 };
 
