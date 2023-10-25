@@ -258,6 +258,7 @@ size_t CModel::FilterAllPoints3D(double maxReprojectionError, double minTriAngle
 }
 size_t CModel::FilterObservationsWithNegativeDepth()
 {
+	CHECK(database);
 	size_t numFiltered = 0;
 	for (size_t imageID : regImageIDs)
 	{
@@ -283,9 +284,323 @@ size_t CModel::FilterObservationsWithNegativeDepth()
 }
 vector<size_t> CModel::FilterImages(double minFocalLengthRatio, double maxFocalLengthRatio, double maxExtraParam)
 {
+	CHECK(database);
+	vector<size_t> filteredImageIDs;
+	for (size_t imageID : regImageIDs)
+	{
+		const CImage& image = database->GetImage(imageID);
+		if (image.GetNumPoints3D(modelID) == 0 || database->GetCamera(image.GetCameraID()).IsBogusParams(minFocalLengthRatio, maxFocalLengthRatio, maxExtraParam))
+		{
+			filteredImageIDs.push_back(imageID);
+		}
+	}
+	for (size_t imageID : filteredImageIDs)
+	{
+		DeRegisterImage(imageID);
+	}
+	return filteredImageIDs;
+}
+size_t CModel::ComputeNumObservations() const
+{
+	CHECK(database);
+	size_t numObservations = 0;
+	for (size_t imageID : regImageIDs)
+	{
+		const CImage& image = database->GetImage(imageID);
+		numObservations += image.GetNumPoints3D(modelID);
+	}
+	return numObservations;
+}
+double CModel::ComputeMeanTrackLength() const
+{
+	if (points3D.empty()) return 0;
+	return ComputeNumObservations() * 1.0 / points3D.size();
+}
+double CModel::ComputeMeanObservationsPerRegImage() const
+{
+	if (regImageIDs.empty()) return 0;
+	return ComputeNumObservations() * 1.0 / regImageIDs.size();
+}
+double CModel::ComputeMeanReprojectionError() const
+{
+	double errorSum = 0;
+	size_t numValidError = 0;
+	for (const auto& pair : points3D)
+	{
+		if (pair.second.HasError())
+		{
+			double error = pair.second.GetError();
+			CHECK(error >= 0);
+			errorSum += error;
+			numValidError++;
+		}
+	}
+	if (numValidError == 0)
+	{
+		return 0;
+	}
+	return errorSum / numValidError;
+}
+void CModel::UpdatePoint3DErrors()
+{
+	CHECK(database);
+	for (auto& pair : points3D)
+	{
+		if (pair.second.GetTrack().GetTrackLength() == 0)
+		{
+			pair.second.SetError(0);
+			continue;
+		}
+		double errorSum = 0;
+		const vector<CTrackElement>& trackElements = pair.second.GetTrack().GetAllElements();
+		for (const CTrackElement& trackElement : trackElements)
+		{
+			const CImage& image = database->GetImage(trackElement.imageID);
+			const CKeypoint& point2D = image.GetKeypoint(trackElement.point2DIndex);
+			const CCamera& camera = database->GetCamera(image.GetCameraID());
+			const Eigen::Vector2d XY(point2D.pt.x, point2D.pt.y);
+			errorSum += sqrt(CalculateSquaredReprojectionError(XY, pair.second.GetXYZ(), image.GetWorldToCamera(modelID), camera));
+		}
+		pair.second.SetError(errorSum / trackElements.size());
+	}
+}
+bool CModel::ExtractColorsForImage(size_t imageID, const std::string& imagePath)
+{
+	CHECK(database);
+	if (!IsFileExists(imagePath))
+	{
+		return false;
+	}
+	const cv::Mat imageMat = cv::imread(imagePath, cv::IMREAD_COLOR);
+	if (imageMat.empty())
+	{
+		return false;
+	}
+	const Eigen::Vector3ub blackColor(0, 0, 0);
 
+	auto bilinearInterpolation = [](const cv::Mat& img, float x, float y) -> Eigen::Vector3ub
+		{
+		// 获取四个临近像素的整数坐标
+		int x1 = floor(x);
+		int x2 = ceil(x);
+		int y1 = floor(y);
+		int y2 = ceil(y);
+
+		// 确保坐标在图像范围内
+		x1 = max(0, min(x1, img.cols - 1));
+		x2 = max(0, min(x2, img.cols - 1));
+		y1 = max(0, min(y1, img.rows - 1));
+		y2 = max(0, min(y2, img.rows - 1));
+
+		// 获取四个临近像素的值
+		cv::Vec3b p1 = img.at<cv::Vec3b>(y1, x1);
+		cv::Vec3b p2 = img.at<cv::Vec3b>(y1, x2);
+		cv::Vec3b p3 = img.at<cv::Vec3b>(y2, x1);
+		cv::Vec3b p4 = img.at<cv::Vec3b>(y2, x2);
+
+		// 进行双线性插值
+		float dx1 = x - x1;
+		float dx2 = x2 - x;
+		float dy1 = y - y1;
+		float dy2 = y2 - y;
+
+		cv::Vec3b interpolated = (dy2 * (dx2 * p1 + dx1 * p2) + dy1 * (dx2 * p3 + dx1 * p4));
+
+		return Eigen::Vector3ub(interpolated[2], interpolated[1], interpolated[0]);
+		};
+
+
+	const CImage& image = database->GetImage(imageID);
+	const size_t numPoints2D = image.GetNumPoints2D();
+	for (size_t point2DID = 0; point2DID < numPoints2D; point2DID++)
+	{
+		if (image.IsPoint2DHasPoint3D(modelID, point2DID))
+		{
+			const CKeypoint& point2D = image.GetKeypoint(point2DID);
+			const size_t point3DID = image.GetPoint3DID(point2DID, modelID);
+			CHECK(points3D.find(point3DID) != points3D.end());
+			CPoint3D& point3D = points3D[point3DID];
+			if (point3D.GetColor() != blackColor)
+			{
+				continue;
+			}
+			point3D.SetColor(bilinearInterpolation(imageMat, point2D.pt.x, point2D.pt.y));
+		}
+	}
+	return true;
 }
 
+void CModel::SetObservationAsTriangulated(size_t imageID, size_t point2DID, bool isContinuedPoint3D)
+{
+	CHECK(database);
+	const CImage& image = database->GetImage(imageID);
+	CHECK(image.IsRegistered(modelID));
+
+	CHECK(image.IsPoint2DHasPoint3D(modelID, point2DID));
+	const CKeypoint& point2D = image.GetKeypoint(point2DID);
+	const pair<CConjugatePoints, CObjectPoints>& correspondences = image.GetCorrespondences(point2DID);
+	const unordered_map<size_t, size_t>& conjugatePoints = correspondences.first;
+	for (const auto& pair : conjugatePoints)
+	{
+		CImage& matchedImage = database->GetImage(pair.first);
+		const CKeypoint& conjugatePoint = matchedImage.GetKeypoint(pair.second);
+
+		matchedImage.IncrementCorrespondenceHasPoint3D(modelID, pair.second);
+		
+		const size_t thisPoint3DID = image.GetPoint3DID(point2DID, modelID);
+		const size_t correspondencePoint3DID = matchedImage.GetPoint3DID(pair.second, modelID);
+		CHECK(points3D.find(thisPoint3DID) != points3D.end());
+		CHECK(points3D.find(correspondencePoint3DID) != points3D.end());
+
+		// 更新像对之间共享的3D点的数量, 并确保只计算一次对应关系(只在imageID<pair.first时计算一次, 当imageID>pair.first时不计算)
+		if (thisPoint3DID == correspondencePoint3DID && (isContinuedPoint3D || imageID < pair.first))
+		{
+			CImagePairStatus& imagePairStatus = imagePairs[make_pair(imageID, pair.first)];
+			imagePairStatus.numTriCorrs++;
+			CHECK(imagePairStatus.numTriCorrs <= imagePairStatus.numTotalCorrs);
+		}
+	}
+}
+void CModel::ResetTriObservations(size_t imageID, size_t point2DID, bool isDeletedPoint3D)
+{
+	CHECK(database);
+	const CImage& image = database->GetImage(imageID);
+	CHECK(image.IsRegistered(modelID));
+
+	CHECK(image.IsPoint2DHasPoint3D(modelID, point2DID));
+	const CKeypoint& point2D = image.GetKeypoint(point2DID);
+
+	const pair<CConjugatePoints, CObjectPoints>& correspondences = image.GetCorrespondences(point2DID);
+	const unordered_map<size_t, size_t>& conjugatePoints = correspondences.first;
+	for (const auto& pair : conjugatePoints)
+	{
+		CImage& matchedImage = database->GetImage(pair.first);
+		const CKeypoint& conjugatePoint = matchedImage.GetKeypoint(pair.second);
+
+		matchedImage.DecrementCorrespondenceHasPoint3D(modelID, pair.second);
+
+		const size_t thisPoint3DID = image.GetPoint3DID(point2DID, modelID);
+		const size_t correspondencePoint3DID = matchedImage.GetPoint3DID(pair.second, modelID);
+		CHECK(points3D.find(thisPoint3DID) != points3D.end());
+		CHECK(points3D.find(correspondencePoint3DID) != points3D.end());
+		// 更新像对之间共享的3D点的数量, 并确保只计算一次对应关系(只在imageID<pair.first时计算一次, 当imageID>pair.first时不计算)
+		if (thisPoint3DID == correspondencePoint3DID && (!isDeletedPoint3D || imageID < pair.first))
+		{
+			CImagePairStatus& imagePairStatus = imagePairs[make_pair(imageID, pair.first)];
+			CHECK(imagePairStatus.numTriCorrs > 0);
+			imagePairStatus.numTriCorrs--;
+		}
+	}
+}
+size_t CModel::FilterPoints3DWithSmallTriangulationAngle(double minTriAngle, const unordered_set<size_t>& points3DID)
+{
+	CHECK(database);
+	size_t numFiltered = 0;
+	const double minTriAngle_Rad = DegToRad(minTriAngle);
+
+	unordered_map<size_t, Eigen::Vector3d> projectionCenters;
+	for (size_t point3DID : points3DID)
+	{
+		if (points3D.find(point3DID) == points3D.end()) continue;
+		const CPoint3D& point3D = points3D[point3DID];
+		const vector<CTrackElement>& trackElements = point3D.GetTrack().GetAllElements();
+
+		// 计算轨迹中所有影像姿态的两两组合的交会角, 仅当没有任何组合具有足够大的交会角时才删除点
+		bool isKeepPoint = false;
+		for (size_t i = 0; i < trackElements.size(); i++)
+		{
+			const size_t imageID1 = trackElements[i].imageID;
+			Eigen::Vector3d projectionCenter1;
+			if (projectionCenters.find(imageID1) == projectionCenters.end())
+			{
+				const CImage& image1 = database->GetImage(i);
+				projectionCenter1 = image1.GetProjectionCenter(modelID);
+				projectionCenters[imageID1] = projectionCenter1;
+			}
+			else
+			{
+				projectionCenter1 = projectionCenters[imageID1];
+			}
+
+			for (size_t j = 0; j < i; j++)
+			{
+				const size_t imageID2 = trackElements[j].imageID;
+				const auto it = projectionCenters.find(imageID2);
+				CHECK(it != projectionCenters.end());
+				const Eigen::Vector3d projectionCenter2 = it->second;
+				const double triAngle = CalculateTriangulationAngle(projectionCenter1, projectionCenter2, point3D.GetXYZ());
+				if (triAngle >= minTriAngle_Rad)
+				{
+					isKeepPoint = true;
+					break;
+				}
+			}
+			if (isKeepPoint)
+			{
+				break;
+			}
+		}
+		if (!isKeepPoint)
+		{
+			numFiltered++;
+			DeletePoint3D(point3DID);
+		}
+	}
+	return numFiltered;
+}
+size_t CModel::FilterPoints3DWithLargeReprojectionError(double maxReprojectionError, const std::unordered_set<size_t>& points3DID)
+{
+	CHECK(database);
+
+	const double maxSquaredReprojectionError = maxReprojectionError * maxReprojectionError;
+	size_t numFiltered = 0;
+	for (size_t point3DID : points3DID)
+	{
+		if (points3D.find(point3DID) == points3D.end()) continue;
+
+		CPoint3D& point3D = points3D[point3DID];
+		const vector<CTrackElement>& trackElements = point3D.GetTrack().GetAllElements();
+		if (trackElements.size() < 2)
+		{
+			numFiltered += trackElements.size();
+			DeletePoint3D(point3DID);
+			continue;
+		}
+
+		double reprojectionErrorSum = 0;
+		vector<CTrackElement> trackElementsToDelete;
+		for (const CTrackElement& trackElement : trackElements)
+		{
+			const CImage& image = database->GetImage(trackElement.imageID);
+			const CCamera& camera = database->GetCamera(image.GetCameraID());
+			const CKeypoint& point2D = image.GetKeypoint(trackElement.point2DIndex);
+			const double squaredReprojectionError = CalculateSquaredReprojectionError(Eigen::Vector2d(point2D.pt.x, point2D.pt.y), point3D.GetXYZ(), image.GetWorldToCamera(modelID), camera);
+			if (squaredReprojectionError > maxSquaredReprojectionError)
+			{
+				trackElementsToDelete.push_back(trackElement);
+			}
+			else
+			{
+				reprojectionErrorSum += sqrt(squaredReprojectionError);
+			}
+		}
+		if (trackElementsToDelete.size() + 1 >= point3D.GetTrack().GetTrackLength())
+		{
+			numFiltered += point3D.GetTrack().GetTrackLength();
+			DeletePoint3D(point3DID);
+		}
+		else
+		{
+			numFiltered += trackElementsToDelete.size();
+			for (const CTrackElement& trackElement : trackElementsToDelete)
+			{
+				DeleteObservation(trackElement.imageID, trackElement.point2DIndex);
+			}
+			point3D.SetError(reprojectionErrorSum / point3D.GetTrack().GetTrackLength());
+		}
+	}
+	return numFiltered;
+}
 
 
 

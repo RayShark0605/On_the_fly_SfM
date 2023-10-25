@@ -52,7 +52,7 @@ struct MatchPairHash
 		return h1 ^ h2;
 	}
 };
-
+// 让unordered_set, unordered_map支持使用pair作为key
 struct MatchPairEqual
 {
 	bool operator()(const std::pair<size_t, size_t>& a, const std::pair<size_t, size_t>& b) const

@@ -358,6 +358,9 @@ public:
 		numCorrespondences++;
 	}
 
+	// 获取响应数据
+	const std::pair<CConjugatePoints, CObjectPoints>& GetCorrespondences(size_t point2DID) const;
+
 	std::string WriteToString() const;
 
 private:

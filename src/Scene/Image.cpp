@@ -144,6 +144,11 @@ Eigen::Vector3d CImage::GetViewDirection(size_t modelID) const
 	const CRigid3D& worldToCamera = GetWorldToCamera(modelID);
 	return worldToCamera.rotation.toRotationMatrix().row(2);
 }
+const pair<CConjugatePoints, CObjectPoints>& CImage::GetCorrespondences(size_t point2DID) const
+{
+	CHECK(point2DID < keypoints.size() && keypoints.size() == correspondences.size() && keypoints.size() == descriptors.rows());
+	return correspondences[point2DID];
+}
 string CImage::WriteToString() const
 {
 	return "";
