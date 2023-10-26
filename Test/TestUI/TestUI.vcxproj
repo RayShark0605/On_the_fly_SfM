@@ -88,7 +88,7 @@
     <ClCompile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NOMINMAX;EIGEN_USE_MKL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NOMINMAX;EIGEN_USE_MKL;%(PreprocessorDefinitions);GLOG_NO_ABBREVIATED_SEVERITIES</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <ConformanceMode>true</ConformanceMode>
       <SDLCheck>false</SDLCheck>
@@ -109,7 +109,8 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NOMINMAX;EIGEN_USE_MKL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NOMINMAX;EIGEN_USE_MKL;%(PreprocessorDefinitions);GLOG_NO_ABBREVIATED_SEVERITIES</PreprocessorDefinitions>
+      <SDLCheck>false</SDLCheck>
     </ClCompile>
     <Link>
       <AdditionalDependencies>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.7\lib\x64\cudart_static.lib;../../x64/Release/Geometry.lib;../../x64/Release/Base.lib;../../x64/Release/Estimator.lib;../../x64/Release/Scene.lib;../../x64/Release/Workflow.lib;../../x64/Release/Feature.lib;../../x64/Release/VLFeat.lib;../../x64/Release/SIFT_GPU.lib;../../x64/Release/UI.lib;%(AdditionalDependencies)</AdditionalDependencies>

@@ -70,7 +70,7 @@ inline double RadToDeg(double rad) noexcept
 template <typename T>
 double GetMedian(const std::vector<T>& nums)
 {
-	CHECK(!nums.empty());
+	Check(!nums.empty());
 
 	const size_t midIndex = nums.size() / 2;
 	std::vector<T> orderedNums = nums;
@@ -89,7 +89,7 @@ double GetMedian(const std::vector<T>& nums)
 template <typename T>
 double GetMean(const std::vector<T>& nums)
 {
-	CHECK(!nums.empty());
+	Check(!nums.empty());
 	double sum = std::accumulate(nums.begin(), nums.end(), 0.0);
 	return sum / nums.size();
 }
@@ -176,8 +176,8 @@ T2 TruncateCast(T1 value)
 template <typename T>
 T Percentile(const std::vector<T>& nums, double n)
 {
-	CHECK(!nums.empty());
-	CHECK(n >= 0 && n <= 100);
+	Check(!nums.empty());
+	Check(n >= 0 && n <= 100);
 
 	const int index = static_cast<int>(std::round(n / 100 * (nums.size() - 1)));
 	const size_t percentileIndex = std::max(0, std::min(static_cast<int>(nums.size() - 1), index));
@@ -294,7 +294,7 @@ T GetRandomGaussian(T mean, T stddev)
 template <typename T>
 void Shuffle(size_t numToShuffle, std::vector<T>& nums)
 {
-	CHECK(numToShuffle <= nums.size());
+	Check(numToShuffle <= nums.size());
 	const size_t lastIndex = static_cast<size_t>(nums.size() - 1);
 	for (size_t i = 0; i < numToShuffle; i++)
 	{

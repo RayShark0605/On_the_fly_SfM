@@ -28,8 +28,8 @@ public:
 	template <typename XType>
 	void GetSampleX(const std::vector<XType>& X, std::vector<XType>& X_rand)
 	{
-		CHECK(X.size() == numTotalSamples);
-		CHECK(numSamples <= numTotalSamples);
+		Check(X.size() == numTotalSamples);
+		Check(numSamples <= numTotalSamples);
 
 		thread_local std::vector<size_t> sampledIndex;
 		Sample(sampledIndex);
@@ -44,8 +44,8 @@ public:
 	template <typename XType, typename YType>
 	void GetSampleXY(const std::vector<XType>& X, const std::vector<YType>& Y, std::vector<XType>& X_rand, std::vector<YType>& Y_rand)
 	{
-		CHECK(X.size() == numTotalSamples);
-		CHECK(Y.size() == numTotalSamples);
+		Check(X.size() == numTotalSamples);
+		Check(Y.size() == numTotalSamples);
 
 		thread_local std::vector<size_t> sampledIndex;
 		Sample(sampledIndex);

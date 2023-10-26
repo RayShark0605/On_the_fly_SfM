@@ -5,8 +5,8 @@ using namespace std;
 
 CModel::CModel(size_t modelID, CDatabase* database, const COptions& options) :database(database)
 {
-	CHECK(database);
-	options.Check();
+	Check(database);
+	options.CheckOptions();
 
 	this->modelID = modelID;
 	regImageIDs.clear();
@@ -21,7 +21,7 @@ CModel::CModel(size_t modelID, CDatabase* database, const COptions& options) :da
 		const size_t numCorrespondences = pair.second;
 		if (numCorrespondences >= options.reconstructionOptions.minNumMatches)
 		{
-			CHECK(imageID1 < imageID2);
+			Check(imageID1 < imageID2);
 			CImagePairStatus imagePairStatus;
 			imagePairStatus.numTotalCorrs = numCorrespondences;
 			imagePairs[pair.first] = imagePairStatus;
@@ -40,22 +40,22 @@ unordered_set<size_t> CModel::GetAllPoints3D() const
 }
 size_t CModel::AddPoint3D(const Eigen::Vector3d& XYZ, const CTrack& track, const Eigen::Vector3ub& color)
 {
-	CHECK(database);
+	Check(database);
 	size_t point3DID = nextPoint3DID;
 	while (points3D.find(nextPoint3DID) != points3D.end())
 	{
 		nextPoint3DID++;
 	}
-	CHECK(point3DID != nextPoint3DID);
+	Check(point3DID != nextPoint3DID);
 
 	const vector<CTrackElement> trackElements = track.GetAllElements();
 	for (const CTrackElement& trackElement : trackElements)
 	{
-		CHECK(regImageIDs.find(trackElement.imageID) != regImageIDs.end());
+		Check(regImageIDs.find(trackElement.imageID) != regImageIDs.end());
 		CImage& image = database->GetImage(trackElement.imageID);
-		CHECK(!image.IsPoint2DHasPoint3D(modelID, trackElement.point2DIndex));
+		Check(!image.IsPoint2DHasPoint3D(modelID, trackElement.point2DIndex));
 		image.SetPoint3DForPoint2D(trackElement.point2DIndex, point3DID, modelID);
-		CHECK(image.GetNumPoints2D() >= image.GetNumPoints3D(modelID));
+		Check(image.GetNumPoints2D() >= image.GetNumPoints3D(modelID));
 	}
 	for (const CTrackElement& trackElement : trackElements)
 	{
@@ -69,20 +69,20 @@ size_t CModel::AddPoint3D(const Eigen::Vector3d& XYZ, const CTrack& track, const
 }
 void CModel::AddObservation(size_t point3DID, const CTrackElement& trackElement)
 {
-	CHECK(database);
-	CHECK(points3D.find(point3DID) != points3D.end());
+	Check(database);
+	Check(points3D.find(point3DID) != points3D.end());
 
 	CImage& image = database->GetImage(trackElement.imageID);
-	CHECK(!image.IsPoint2DHasPoint3D(modelID, trackElement.point2DIndex));
+	Check(!image.IsPoint2DHasPoint3D(modelID, trackElement.point2DIndex));
 	image.SetPoint3DForPoint2D(trackElement.point2DIndex, point3DID, modelID);
-	CHECK(image.GetNumPoints3D(modelID) <= image.GetNumPoints2D());
+	Check(image.GetNumPoints3D(modelID) <= image.GetNumPoints2D());
 
 	points3D[point3DID].GetTrack().AddElement(trackElement);
 	SetObservationAsTriangulated(trackElement.imageID, trackElement.point2DIndex, true);
 }
 size_t CModel::MergePoints3D(size_t point3D1ID, size_t point3D2ID)
 {
-	CHECK(points3D.find(point3D1ID) != points3D.end() && points3D.find(point3D2ID) != points3D.end());
+	Check(points3D.find(point3D1ID) != points3D.end() && points3D.find(point3D2ID) != points3D.end());
 
 	const CPoint3D& point1 = points3D[point3D1ID];
 	const CPoint3D& point2 = points3D[point3D2ID];
@@ -105,8 +105,8 @@ size_t CModel::MergePoints3D(size_t point3D1ID, size_t point3D2ID)
 void CModel::DeletePoint3D(size_t point3DID)
 {
 	// 注意：不要更改这些代码的顺序
-	CHECK(database);
-	CHECK(points3D.find(point3DID) != points3D.end());
+	Check(database);
+	Check(points3D.find(point3DID) != points3D.end());
 	const CTrack& track = points3D[point3DID].GetTrack();
 	const vector<CTrackElement> trackElements = track.GetAllElements();
 	for (const CTrackElement& trackElement : trackElements)
@@ -123,12 +123,12 @@ void CModel::DeletePoint3D(size_t point3DID)
 void CModel::DeleteObservation(size_t imageID, size_t point2DID)
 {
 	// 注意：不要更改这些代码的顺序
-	CHECK(database);
+	Check(database);
 	CImage& image = database->GetImage(imageID);
 	const size_t point3DID = image.GetPoint3DID(point2DID, modelID);
 	
 	const auto it = points3D.find(point3DID);
-	CHECK(it != points3D.end());
+	Check(it != points3D.end());
 	CPoint3D& point3D = it->second;
 	CTrack& track = point3D.GetTrack();
 	if (track.GetTrackLength() <= 2)
@@ -143,20 +143,20 @@ void CModel::DeleteObservation(size_t imageID, size_t point2DID)
 }
 void CModel::RegisterImage(size_t imageID)
 {
-	CHECK(database);
+	Check(database);
 	CImage& image = database->GetImage(imageID);
 	const auto it = regImageIDs.find(modelID);
 	if (!image.IsRegistered(modelID))
 	{
-		CHECK(it == regImageIDs.end());
+		Check(it == regImageIDs.end());
 		image.SetRegistered(modelID, true);
 		regImageIDs.insert(imageID);
 	}
-	CHECK(it != regImageIDs.end());
+	Check(it != regImageIDs.end());
 }
 void CModel::DeRegisterImage(size_t imageID)
 {
-	CHECK(database);
+	Check(database);
 	CImage& image = database->GetImage(imageID);
 	const size_t numPoints2D = image.GetNumPoints2D();
 	for (size_t point2DID = 0; point2DID < numPoints2D; point2DID++)
@@ -175,7 +175,7 @@ void CModel::Normalize(double extent, double p0, double p1, bool isUseImage)
 	{
 		return;
 	}
-	CHECK(extent > 0 && p0 >= 0 && p0 <= 1 && p1 >= 0 && p1 <= 1 && p0 <= p1);
+	Check(extent > 0 && p0 >= 0 && p0 <= 1 && p1 >= 0 && p1 <= 1 && p0 <= p1);
 	const tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Vector3d> boundsAndCentroid = ComputeBoundsAndCentroid(p0, p1, isUseImage);
 
 	// 计算平移和缩放量, 以便在缩放之前执行平移
@@ -194,18 +194,18 @@ void CModel::Normalize(double extent, double p0, double p1, bool isUseImage)
 }
 Eigen::Vector3d CModel::ComputeCentroid(double p0, double p1) const
 {
-	CHECK(p0 >= 0 && p0 <= 1 && p1 >= 0 && p1 <= 1 && p0 <= p1);
+	Check(p0 >= 0 && p0 <= 1 && p1 >= 0 && p1 <= 1 && p0 <= p1);
 	return get<2>(ComputeBoundsAndCentroid(p0, p1, false));
 }
 pair<Eigen::Vector3d, Eigen::Vector3d> CModel::ComputeBoundingBox(double p0, double p1) const
 {
-	CHECK(p0 >= 0 && p0 <= 1 && p1 >= 0 && p1 <= 1 && p0 <= p1);
+	Check(p0 >= 0 && p0 <= 1 && p1 >= 0 && p1 <= 1 && p0 <= p1);
 	const tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Vector3d> boundsAndCentroid = ComputeBoundsAndCentroid(p0, p1, false);
 	return { get<0>(boundsAndCentroid), get<1>(boundsAndCentroid) };
 }
 void CModel::Transform(const CSim3D& oldWorldToNewWorld)
 {
-	CHECK(database);
+	Check(database);
 	// TODO: 原Colmap的Transform函数会转换整个database所有的image, 本人认为仅需要转换当前模型注册的影像即可, 不被当前影像注册的影像应该不用转换
 	for (size_t regImageID : regImageIDs)
 	{
@@ -219,7 +219,7 @@ void CModel::Transform(const CSim3D& oldWorldToNewWorld)
 }
 vector<size_t> CModel::FindCommonRegisteredImages(const CModel& otherModel) const
 {
-	CHECK(database && database == otherModel.database);
+	Check(database && database == otherModel.database);
 	vector<size_t> result;
 	result.reserve(regImageIDs.size());
 	for (size_t regImageID : regImageIDs)
@@ -227,12 +227,12 @@ vector<size_t> CModel::FindCommonRegisteredImages(const CModel& otherModel) cons
 		const CImage& image = database->GetImage(regImageID);
 		if (otherModel.regImageIDs.find(regImageID) != otherModel.regImageIDs.end())
 		{
-			CHECK(image.IsRegistered(modelID) && image.IsRegistered(otherModel.modelID));
+			Check(image.IsRegistered(modelID) && image.IsRegistered(otherModel.modelID));
 			result.push_back(regImageID);
 		}
 		else
 		{
-			CHECK(image.IsRegistered(modelID) && !image.IsRegistered(otherModel.modelID));
+			Check(image.IsRegistered(modelID) && !image.IsRegistered(otherModel.modelID));
 		}
 	}
 	return result;
@@ -246,7 +246,7 @@ size_t CModel::FilterPoints3D(double maxReprojectionError, double minTriAngle, c
 }
 size_t CModel::FilterPoints3DInImages(double maxReprojectionError, double minTriAngle, const unordered_set<size_t>& imageIDs)
 {
-	CHECK(database);
+	Check(database);
 	unordered_set<size_t> pointsToBeFiltered;
 	for (size_t imageID : imageIDs)
 	{
@@ -257,7 +257,7 @@ size_t CModel::FilterPoints3DInImages(double maxReprojectionError, double minTri
 			if (image.IsPoint2DHasPoint3D(modelID, point2DID))
 			{
 				const size_t point3DID = image.GetPoint3DID(point2DID, modelID);
-				CHECK(points3D.find(point3DID) != points3D.end());
+				Check(points3D.find(point3DID) != points3D.end());
 				pointsToBeFiltered.insert(point3DID);
 			}
 		}
@@ -275,7 +275,7 @@ size_t CModel::FilterAllPoints3D(double maxReprojectionError, double minTriAngle
 }
 size_t CModel::FilterObservationsWithNegativeDepth()
 {
-	CHECK(database);
+	Check(database);
 	size_t numFiltered = 0;
 	for (size_t imageID : regImageIDs)
 	{
@@ -287,7 +287,7 @@ size_t CModel::FilterObservationsWithNegativeDepth()
 			if (image.IsPoint2DHasPoint3D(modelID, point2DID))
 			{
 				const size_t point3DID = image.GetPoint3DID(point2DID, modelID);
-				CHECK(points3D.find(point3DID) != points3D.end());
+				Check(points3D.find(point3DID) != points3D.end());
 				const CPoint3D& point3D = points3D[point3DID];
 				if (!HasPointPositiveDepth(worldToCamera, point3D.GetXYZ()))
 				{
@@ -301,7 +301,7 @@ size_t CModel::FilterObservationsWithNegativeDepth()
 }
 vector<size_t> CModel::FilterImages(double minFocalLengthRatio, double maxFocalLengthRatio, double maxExtraParam)
 {
-	CHECK(database);
+	Check(database);
 	vector<size_t> filteredImageIDs;
 	for (size_t imageID : regImageIDs)
 	{
@@ -319,7 +319,7 @@ vector<size_t> CModel::FilterImages(double minFocalLengthRatio, double maxFocalL
 }
 size_t CModel::ComputeNumObservations() const
 {
-	CHECK(database);
+	Check(database);
 	size_t numObservations = 0;
 	for (size_t imageID : regImageIDs)
 	{
@@ -347,7 +347,7 @@ double CModel::ComputeMeanReprojectionError() const
 		if (pair.second.HasError())
 		{
 			double error = pair.second.GetError();
-			CHECK(error >= 0);
+			Check(error >= 0);
 			errorSum += error;
 			numValidError++;
 		}
@@ -360,7 +360,7 @@ double CModel::ComputeMeanReprojectionError() const
 }
 void CModel::UpdatePoint3DErrors()
 {
-	CHECK(database);
+	Check(database);
 	for (auto& pair : points3D)
 	{
 		if (pair.second.GetTrack().GetTrackLength() == 0)
@@ -383,7 +383,7 @@ void CModel::UpdatePoint3DErrors()
 }
 bool CModel::ExtractColorsForImage(size_t imageID, const string& imagePath)
 {
-	CHECK(database);
+	Check(database);
 	if (!IsFileExists(imagePath))
 	{
 		return false;
@@ -435,7 +435,7 @@ bool CModel::ExtractColorsForImage(size_t imageID, const string& imagePath)
 		{
 			const CKeypoint& point2D = image.GetKeypoint(point2DID);
 			const size_t point3DID = image.GetPoint3DID(point2DID, modelID);
-			CHECK(points3D.find(point3DID) != points3D.end());
+			Check(points3D.find(point3DID) != points3D.end());
 			CPoint3D& point3D = points3D[point3DID];
 			if (point3D.GetColor() != blackColor)
 			{
@@ -449,11 +449,11 @@ bool CModel::ExtractColorsForImage(size_t imageID, const string& imagePath)
 
 void CModel::SetObservationAsTriangulated(size_t imageID, size_t point2DID, bool isContinuedPoint3D)
 {
-	CHECK(database);
+	Check(database);
 	const CImage& image = database->GetImage(imageID);
-	CHECK(image.IsRegistered(modelID));
+	Check(image.IsRegistered(modelID));
 
-	CHECK(image.IsPoint2DHasPoint3D(modelID, point2DID));
+	Check(image.IsPoint2DHasPoint3D(modelID, point2DID));
 	const CKeypoint& point2D = image.GetKeypoint(point2DID);
 	const pair<CConjugatePoints, CObjectPoints>& correspondences = image.GetCorrespondences(point2DID);
 	const unordered_map<size_t, size_t>& conjugatePoints = correspondences.first;
@@ -466,25 +466,25 @@ void CModel::SetObservationAsTriangulated(size_t imageID, size_t point2DID, bool
 		
 		const size_t thisPoint3DID = image.GetPoint3DID(point2DID, modelID);
 		const size_t correspondencePoint3DID = matchedImage.GetPoint3DID(pair.second, modelID);
-		CHECK(points3D.find(thisPoint3DID) != points3D.end());
-		CHECK(points3D.find(correspondencePoint3DID) != points3D.end());
+		Check(points3D.find(thisPoint3DID) != points3D.end());
+		Check(points3D.find(correspondencePoint3DID) != points3D.end());
 
 		// 更新像对之间共享的3D点的数量, 并确保只计算一次对应关系(只在imageID<pair.first时计算一次, 当imageID>pair.first时不计算)
 		if (thisPoint3DID == correspondencePoint3DID && (isContinuedPoint3D || imageID < pair.first))
 		{
 			CImagePairStatus& imagePairStatus = imagePairs[make_pair(imageID, pair.first)];
 			imagePairStatus.numTriCorrs++;
-			CHECK(imagePairStatus.numTriCorrs <= imagePairStatus.numTotalCorrs);
+			Check(imagePairStatus.numTriCorrs <= imagePairStatus.numTotalCorrs);
 		}
 	}
 }
 void CModel::ResetTriObservations(size_t imageID, size_t point2DID, bool isDeletedPoint3D)
 {
-	CHECK(database);
+	Check(database);
 	const CImage& image = database->GetImage(imageID);
-	CHECK(image.IsRegistered(modelID));
+	Check(image.IsRegistered(modelID));
 
-	CHECK(image.IsPoint2DHasPoint3D(modelID, point2DID));
+	Check(image.IsPoint2DHasPoint3D(modelID, point2DID));
 	const CKeypoint& point2D = image.GetKeypoint(point2DID);
 
 	const pair<CConjugatePoints, CObjectPoints>& correspondences = image.GetCorrespondences(point2DID);
@@ -498,20 +498,20 @@ void CModel::ResetTriObservations(size_t imageID, size_t point2DID, bool isDelet
 
 		const size_t thisPoint3DID = image.GetPoint3DID(point2DID, modelID);
 		const size_t correspondencePoint3DID = matchedImage.GetPoint3DID(pair.second, modelID);
-		CHECK(points3D.find(thisPoint3DID) != points3D.end());
-		CHECK(points3D.find(correspondencePoint3DID) != points3D.end());
+		Check(points3D.find(thisPoint3DID) != points3D.end());
+		Check(points3D.find(correspondencePoint3DID) != points3D.end());
 		// 更新像对之间共享的3D点的数量, 并确保只计算一次对应关系(只在imageID<pair.first时计算一次, 当imageID>pair.first时不计算)
 		if (thisPoint3DID == correspondencePoint3DID && (!isDeletedPoint3D || imageID < pair.first))
 		{
 			CImagePairStatus& imagePairStatus = imagePairs[make_pair(imageID, pair.first)];
-			CHECK(imagePairStatus.numTriCorrs > 0);
+			Check(imagePairStatus.numTriCorrs > 0);
 			imagePairStatus.numTriCorrs--;
 		}
 	}
 }
 size_t CModel::FilterPoints3DWithSmallTriangulationAngle(double minTriAngle, const unordered_set<size_t>& points3DID)
 {
-	CHECK(database);
+	Check(database);
 	size_t numFiltered = 0;
 	const double minTriAngle_Rad = DegToRad(minTriAngle);
 
@@ -543,7 +543,7 @@ size_t CModel::FilterPoints3DWithSmallTriangulationAngle(double minTriAngle, con
 			{
 				const size_t imageID2 = trackElements[j].imageID;
 				const auto it = projectionCenters.find(imageID2);
-				CHECK(it != projectionCenters.end());
+				Check(it != projectionCenters.end());
 				const Eigen::Vector3d projectionCenter2 = it->second;
 				const double triAngle = CalculateTriangulationAngle(projectionCenter1, projectionCenter2, point3D.GetXYZ());
 				if (triAngle >= minTriAngle_Rad)
@@ -567,7 +567,7 @@ size_t CModel::FilterPoints3DWithSmallTriangulationAngle(double minTriAngle, con
 }
 size_t CModel::FilterPoints3DWithLargeReprojectionError(double maxReprojectionError, const unordered_set<size_t>& points3DID)
 {
-	CHECK(database);
+	Check(database);
 
 	const double maxSquaredReprojectionError = maxReprojectionError * maxReprojectionError;
 	size_t numFiltered = 0;
@@ -620,7 +620,7 @@ size_t CModel::FilterPoints3DWithLargeReprojectionError(double maxReprojectionEr
 }
 tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Vector3d> CModel::ComputeBoundsAndCentroid(double p0, double p1, bool isUseImages) const
 {
-	CHECK(p0 >= 0 && p0 <= 1 && p1 >= 0 && p1 <= 1 && p0 <= p1);
+	Check(p0 >= 0 && p0 <= 1 && p1 >= 0 && p1 <= 1 && p0 <= p1);
 	const size_t numElements = (isUseImages ? regImageIDs.size() : points3D.size());
 	if (numElements == 0)
 	{

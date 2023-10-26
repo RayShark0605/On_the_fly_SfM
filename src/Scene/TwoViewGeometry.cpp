@@ -18,7 +18,7 @@ CSIFTMatches ExtractInlierMatches(const CSIFTMatches& matches, size_t numInliers
 }
 CSIFTMatches ExtractOutlierMatches(const CSIFTMatches& matches, const CSIFTMatches& inlierMatches)
 {
-	CHECK(matches.size() >= inlierMatches.size());
+	Check(matches.size() >= inlierMatches.size());
 	unordered_set<pair<size_t, size_t>, MatchPairHash, MatchPairEqual> inlierMatchesMap;
 	inlierMatchesMap.reserve(inlierMatches.size());
 	for (const CSIFTMatch& match : inlierMatches)
@@ -129,7 +129,7 @@ void CTwoViewGeometry::Estimate(const CCamera& camera1, const vector<Eigen::Vect
 }
 void CTwoViewGeometry::EstimateCalibrated(const CCamera& camera1, const vector<Eigen::Vector2d>& points1, const CCamera& camera2, const vector<Eigen::Vector2d>& points2, const CSIFTMatches& matches, const CTwoViewGeometryOptions& options)
 {
-	options.Check();
+	options.CheckOptions();
 	if (matches.size() < options.minInliersNum) 
 	{
 		type = CTwoViewGeometryType::CDegenerate;
@@ -269,7 +269,7 @@ void CTwoViewGeometry::EstimateCalibrated(const CCamera& camera1, const vector<E
 }
 void CTwoViewGeometry::EstimateUncalibrated(const CCamera& camera1, const vector<Eigen::Vector2d>& points1, const CCamera& camera2, const vector<Eigen::Vector2d>& points2, const CSIFTMatches& matches, const CTwoViewGeometryOptions& options)
 {
-	options.Check();
+	options.CheckOptions();
 	if (matches.size() < options.minInliersNum)
 	{
 		type = CTwoViewGeometryType::CDegenerate;
@@ -346,7 +346,7 @@ void CTwoViewGeometry::EstimateUncalibrated(const CCamera& camera1, const vector
 }
 void CTwoViewGeometry::EstimateCalibratedHomography(const CCamera& camera1, const vector<Eigen::Vector2d>& points1, const CCamera& camera2, const vector<Eigen::Vector2d>& points2, const CSIFTMatches& matches, const CTwoViewGeometryOptions& options)
 {
-	options.Check();
+	options.CheckOptions();
 	if (matches.size() < options.minInliersNum)
 	{
 		type = CTwoViewGeometryType::CDegenerate;
@@ -425,7 +425,7 @@ void CTwoViewGeometry::EstimateMultipleType(const CCamera& camera1, const vector
 }
 bool CTwoViewGeometry::DetectWaterMark(const CCamera& camera1, const vector<Eigen::Vector2d>& points1, const CCamera& camera2, const vector<Eigen::Vector2d>& points2, size_t numInliers, const vector<char>& inlierMask, const CTwoViewGeometryOptions& options)
 {
-	options.Check();
+	options.CheckOptions();
 
 	// 检查边缘区域内的内点, 并提取这些内点匹配
 	const double diagonal1 = sqrt(camera1.GetWidth() * camera1.GetWidth() + camera1.GetHeight() * camera1.GetHeight());

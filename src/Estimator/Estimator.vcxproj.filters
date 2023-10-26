@@ -30,6 +30,12 @@
     <ClInclude Include="Common.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="BundleAdjustment.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CostFunction.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Estimator.cpp">
@@ -45,6 +51,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Common.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BundleAdjustment.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

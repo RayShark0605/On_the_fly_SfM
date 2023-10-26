@@ -5,8 +5,8 @@ using namespace std;
 
 CRANSAC::CRANSAC(const CRANSACOptions& options, CEstimator* estimator, CSupportMeasurer* supportMeasurer, CSampler* sampler)
 {
-	CHECK(estimator);
-	options.Check();
+	Check(estimator);
+	options.CheckOptions();
 
 	this->estimator = estimator;
 	this->options = options;
@@ -70,12 +70,12 @@ size_t CRANSAC::GetNumTrials(size_t minNumSamples, size_t numInliers, size_t num
 }
 size_t CRANSAC::GetNumTrials(size_t numInliers, size_t numSamples, double confidence, double numTrialsMultiplier)
 {
-	CHECK(estimator);
+	Check(estimator);
 	return GetNumTrials(estimator->minNumSamples, numInliers, numSamples, confidence, numTrialsMultiplier);
 }
 
 CLORANSAC::CLORANSAC(const CRANSACOptions& options, CEstimator* estimator, CEstimator* localEstimator, CSupportMeasurer* supportMeasurer, CSampler* sampler) :CRANSAC(options, estimator, supportMeasurer, sampler)
 {
-	CHECK(localEstimator);
+	Check(localEstimator);
 	this->localEstimator = localEstimator;
 }

@@ -20,7 +20,7 @@ CRandomSampler::CRandomSampler(size_t numSamples) :CSampler(numSamples)
 //}
 void CRandomSampler::Initialize(size_t numTotalSamples)
 {
-	CHECK(numSamples <= numTotalSamples);
+	Check(numSamples <= numTotalSamples);
 	this->numTotalSamples = numTotalSamples;
 	allIndex.resize(numTotalSamples);
 	iota(allIndex.begin(), allIndex.end(), 0);
@@ -57,7 +57,7 @@ CProgressiveSampler::CProgressiveSampler(size_t numSamples) :CSampler(numSamples
 //}
 void CProgressiveSampler::Initialize(size_t numTotalSamples)
 {
-	CHECK(numSamples <= numTotalSamples);
+	Check(numSamples <= numTotalSamples);
 	this->numTotalSamples = numTotalSamples;
 	t = 0;
 	n = numSamples;
@@ -86,7 +86,7 @@ void CProgressiveSampler::Sample(vector<size_t>& sampledIndex)
 		n++;
 	}
 
-	CHECK(n > 1 && numSamples > 0);
+	Check(n > 1 && numSamples > 0);
 	size_t numRandomSamples = numSamples;
 	size_t maxRandomSampleIndex = n - 1;
 	if (T_n_p >= t) 
@@ -128,7 +128,7 @@ CCombinationSampler::CCombinationSampler(size_t numSamples) :CSampler(numSamples
 //}
 void CCombinationSampler::Initialize(size_t numTotalSamples)
 {
-	CHECK(numSamples <= numTotalSamples);
+	Check(numSamples <= numTotalSamples);
 	this->numTotalSamples = numTotalSamples;
 	allIndex.resize(numTotalSamples);
 	iota(allIndex.begin(), allIndex.end(), 0);

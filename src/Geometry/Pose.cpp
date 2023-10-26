@@ -73,8 +73,8 @@ Eigen::Matrix3d EulerAnglesToRotationMatrix(double rx, double ry, double rz)
 }
 Eigen::Quaterniond AverageQuaternions(const vector<Eigen::Quaterniond>& quats, const vector<double>& weights)
 {
-    CHECK(quats.size() == weights.size());
-    CHECK(!quats.empty());
+    Check(quats.size() == weights.size());
+    Check(!quats.empty());
 
     if (quats.size() == 1) 
     {
@@ -86,7 +86,7 @@ Eigen::Quaterniond AverageQuaternions(const vector<Eigen::Quaterniond>& quats, c
 
     for (size_t i = 0; i < quats.size(); i++) 
     {
-        CHECK(weights[i] > 0);
+        Check(weights[i] > 0);
         const Eigen::Vector4d qvec = quats[i].normalized().coeffs();
         A += weights[i] * qvec * qvec.transpose();
         weightSum += weights[i];
@@ -110,7 +110,7 @@ double CalculateDepth(const Eigen::Matrix3x4d& worldToCamera, const Eigen::Vecto
 }
 bool CheckCheirality(const Eigen::Matrix3d& R, const Eigen::Vector3d& t, const vector<Eigen::Vector2d>& points1, const vector<Eigen::Vector2d>& points2, vector<Eigen::Vector3d>& points3D)
 {
-    CHECK(points1.size() == points2.size());
+    Check(points1.size() == points2.size());
     const Eigen::Matrix3x4d projectionMatrix1 = Eigen::Matrix3x4d::Identity();
     Eigen::Matrix3x4d projectionMatrix2;
     projectionMatrix2.leftCols<3>() = R;

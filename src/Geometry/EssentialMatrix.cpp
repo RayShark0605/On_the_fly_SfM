@@ -33,7 +33,7 @@ void DecomposeEssentialMatrix(const Eigen::Matrix3d& E, Eigen::Matrix3d& R1, Eig
 }
 void EssentialMatrixToPose(const Eigen::Matrix3d& E, const vector<Eigen::Vector2d>& points1, const vector<Eigen::Vector2d>& points2, Eigen::Matrix3d& R, Eigen::Vector3d& t, vector<Eigen::Vector3d>& points3D)
 {
-	CHECK(points1.size() == points2.size());
+	Check(points1.size() == points2.size());
 	Eigen::Matrix3d R1;
 	Eigen::Matrix3d R2;
 	DecomposeEssentialMatrix(E, R1, R2, t);

@@ -78,11 +78,17 @@ public:
 	CSimpleRadialCameraModel() noexcept;
 	std::vector<double> InitializeParams(double focalLength, size_t width, size_t height) const noexcept override;
 	void CameraToImage(const std::vector<double>& params, float u, float v, float w, float& x, float& y) const override;
+
+	template <typename T>
+	static void CameraToImage(const T* params, T u, T v, T w, T* x, T* y);
 	void ImageToCamera(const std::vector<double>& params, float x, float y, float& u, float& v, float& w) const override;
 
 private:
 	const std::vector<double> GetExtraParams(const std::vector<double>& params) const override;
 	void Distortion(const std::vector<double>& extraParams, double u, double v, double& du, double& dv) const override;
+
+	template <typename T>
+	static void Distortion(const T* extraParams, T u, T v, T* du, T* dv);
 };
 
 

@@ -137,7 +137,7 @@ void DecomposeHomographyMatrix(const Eigen::Matrix3d& H, const Eigen::Matrix3d& 
 }
 void HomographyMatrixToPose(const Eigen::Matrix3d& H, const Eigen::Matrix3d& K1, const Eigen::Matrix3d& K2, const vector<Eigen::Vector2d>& points1, const vector<Eigen::Vector2d>& points2, Eigen::Matrix3d& R, Eigen::Vector3d& t, Eigen::Vector3d& n, vector<Eigen::Vector3d>& points3D)
 {
-    CHECK(points1.size() == points2.size());
+    Check(points1.size() == points2.size());
     vector<Eigen::Matrix3d> R_cmbs;
     vector<Eigen::Vector3d> t_cmbs;
     vector<Eigen::Vector3d> n_cmbs;
@@ -159,6 +159,6 @@ void HomographyMatrixToPose(const Eigen::Matrix3d& H, const Eigen::Matrix3d& K1,
 }
 Eigen::Matrix3d PoseToHomographyMatrix(const Eigen::Matrix3d& K1, const Eigen::Matrix3d& K2, const Eigen::Matrix3d& R, const Eigen::Vector3d& t, const Eigen::Vector3d& n, double d)
 {
-    CHECK(d > 0);
+    Check(d > 0);
     return K2 * (R - t * n.normalized().transpose() / d) * K1.inverse();
 }

@@ -20,10 +20,10 @@
 #include <boost/filesystem.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
 
-
 #include <Eigen/Core>
 
 #include <cuda_runtime.h>
+#include <ceres/ceres.h>
 
 /*
 * 各种宏变量：
@@ -61,7 +61,7 @@ struct MatchPairEqual
 	}
 };
 
-#define CHECK(condition, ...) CheckFunc((condition), (__FILE__), (__LINE__), __VA_ARGS__)
+#define Check(condition, ...) CheckFunc((condition), (__FILE__), (__LINE__), __VA_ARGS__)
 inline void CheckFunc(bool condition, const char* file, int line, std::string info = "Check failed!")
 {
 	if (!condition)
@@ -310,8 +310,8 @@ inline std::string EnsureTrailingSlash(const std::string& str) noexcept
 // 检查文件名是否具有指定的文件扩展名(不区分大小写)
 inline bool HasFileExtension(const std::string& fileName, const std::string& extension)
 {
-	CHECK(!extension.empty());
-	CHECK(extension[0] == '.');
+	Check(!extension.empty());
+	Check(extension[0] == '.');
 	std::string extensionLower = StringToLower(extension);
 	std::string fileNameLower = StringToLower(fileName);
 	return boost::algorithm::ends_with(fileNameLower, extensionLower);
@@ -367,7 +367,7 @@ inline void FileCopy(const std::string& srcPath, const std::string& dstPath, CFi
 		boost::filesystem::create_symlink(srcPath, dstPath);
 		break;
 	default:
-		CHECK(false, "Unknown file copy type!");
+		Check(false, "Unknown file copy type!");
 	}
 }
 
@@ -398,11 +398,11 @@ inline void CreateDirIfNotExists(const std::string& path, bool recursive = false
 	}
 	if (recursive) 
 	{
-		CHECK(boost::filesystem::create_directories(path));
+		Check(boost::filesystem::create_directories(path));
 	}
 	else 
 	{
-		CHECK(boost::filesystem::create_directory(path));
+		Check(boost::filesystem::create_directory(path));
 	}
 }
 
@@ -425,7 +425,7 @@ inline std::string GetFileName(const std::string& path)
 {
 	std::string result = StringReplace(path, "\\", "/");
 	size_t pos = result.find_last_of('/');
-	CHECK(pos != std::string::npos);
+	Check(pos != std::string::npos);
 	result = result.substr(pos + 1, result.size() - pos - 1);
 	return result;
 }
@@ -444,7 +444,7 @@ inline std::string GetFileNameNoExtension(const std::string& path)
 // 删除文件
 inline void RemoveFile(const std::string& path)
 {
-	CHECK(IsFileExists(path));
+	Check(IsFileExists(path));
 	boost::filesystem::path fileToRemove(path);
 	boost::filesystem::remove(fileToRemove);
 }
@@ -452,7 +452,7 @@ inline void RemoveFile(const std::string& path)
 // 删除文件夹(即使这个文件夹非空)
 inline void RemoveDir(const std::string& path)
 {
-	CHECK(IsDirExists(path));
+	Check(IsDirExists(path));
 	boost::filesystem::path dirToRemove(path);
 	boost::filesystem::remove_all(dirToRemove);
 }
@@ -548,14 +548,14 @@ inline std::vector<std::string> GetRecursiveDirList(const std::string& path)
 inline size_t GetFileSize(const std::string& path) 
 {
 	std::ifstream file(path, std::ifstream::ate | std::ifstream::binary);
-	CHECK(file.is_open());
+	Check(file.is_open());
 	return file.tellg();
 }
 
 // 从文本文件中读取每一行，并作为字符串的向量返回
 inline std::vector<std::string> ReadTextFile(const std::string& path)
 {
-	CHECK(IsFileExists(path));
+	Check(IsFileExists(path));
 
 	std::vector<std::string> lines;
 	boost::iostreams::mapped_file_source mmap(path);
@@ -610,13 +610,20 @@ std::vector<std::any> TypeVec2AnyVec(const std::vector<Type>& vec)
 template <typename Type>
 std::vector<Type> AnyVec2TypeVec(const std::vector<std::any>& vec)
 {
-	CHECK(vec.empty() || vec[0].type() == typeid(Type));
+	Check(vec.empty() || vec[0].type() == typeid(Type));
 	std::vector<Type> result(vec.size());
 	for (size_t i = 0; i < vec.size(); i++)
 	{
 		result[i] = std::any_cast<Type>(vec[i]);
 	}
 	return result;
+}
+
+// 获取CPU的逻辑处理器个数
+inline int GetEffectiveNumThreads()
+{
+	int numEffectiveThreads = std::thread::hardware_concurrency();
+	return std::max(numEffectiveThreads, 1);
 }
 
 // 当前计算机有多少个支持CUDA的显卡
@@ -645,7 +652,7 @@ inline int SetBestCudaDevice()
 	int selectedGPUIndex = -1;
 	cudaChooseDevice(&selectedGPUIndex, allDevices.data());
 
-	CHECK(selectedGPUIndex >= 0 && selectedGPUIndex < numCudaDevices);
+	Check(selectedGPUIndex >= 0 && selectedGPUIndex < numCudaDevices);
 	cudaDeviceProp device;
 	cudaGetDeviceProperties(&device, selectedGPUIndex);
 	cudaSetDevice(selectedGPUIndex);

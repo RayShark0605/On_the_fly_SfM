@@ -53,7 +53,7 @@ struct CRigid3D final
 		double num;
 
 		in >> ch;
-		CHECK(ch == '{');
+		Check(ch == '{');
 
 		for (int i = 0; i < 4; i++)
 		{
@@ -65,7 +65,7 @@ struct CRigid3D final
 		values.clear();
 
 		in >> ch >> ch;
-		CHECK(ch == '{');
+		Check(ch == '{');
 
 		for (int i = 0; i < 3; i++)
 		{

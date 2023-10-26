@@ -19,13 +19,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BundleAdjustment.h" />
     <ClInclude Include="Common.h" />
+    <ClInclude Include="CostFunction.h" />
     <ClInclude Include="Estimator.h" />
     <ClInclude Include="RANSAC.h" />
     <ClInclude Include="Sampler.h" />
     <ClInclude Include="SupportMeasurer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BundleAdjustment.cpp" />
     <ClCompile Include="Common.cpp" />
     <ClCompile Include="Estimator.cpp" />
     <ClCompile Include="RANSAC.cpp" />
@@ -131,8 +134,8 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);NOMINMAX;_CRT_SECURE_NO_WARNINGS;EIGEN_USE_MKL</PreprocessorDefinitions>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);NOMINMAX;_CRT_SECURE_NO_WARNINGS;EIGEN_USE_MKL;GLOG_NO_ABBREVIATED_SEVERITIES</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <OpenMPSupport>true</OpenMPSupport>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -149,8 +152,8 @@
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);NOMINMAX;_CRT_SECURE_NO_WARNINGS;FindPolynomialRoots_Fast;EIGEN_USE_MKL_ALL;EIGEN_USE_MKL</PreprocessorDefinitions>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);NOMINMAX;_CRT_SECURE_NO_WARNINGS;FindPolynomialRoots_Fast;EIGEN_USE_MKL_ALL;EIGEN_USE_MKL;GLOG_NO_ABBREVIATED_SEVERITIES</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <OpenMPSupport>true</OpenMPSupport>
       <LanguageStandard>stdcpp17</LanguageStandard>

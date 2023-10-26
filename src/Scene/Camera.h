@@ -57,7 +57,7 @@ public:
 			params.resize(cameraModel->GetParamsNum());
 			break;
 		default:
-			CHECK(false, "Unknown camera model ID!");
+			Check(false, "Unknown camera model ID!");
 		}
 	}
 	inline void SetCameraModelName(const std::string& modelName)
@@ -69,7 +69,7 @@ public:
 		}
 		else
 		{
-			CHECK(false, "Unknown camera model name!");
+			Check(false, "Unknown camera model name!");
 		}
 	}
 
@@ -111,7 +111,7 @@ public:
 	{
 		size_t focalLengthIndex_X, focalLengthIndex_Y;
 		GetFocalLengthIndex(focalLengthIndex_X, focalLengthIndex_Y);
-		CHECK(focalLengthIndex_X < params.size() && focalLengthIndex_Y < params.size());
+		Check(focalLengthIndex_X < params.size() && focalLengthIndex_Y < params.size());
 
 		double focalLength = params[focalLengthIndex_X] + params[focalLengthIndex_Y];
 		return focalLength / 2.0;
@@ -121,29 +121,29 @@ public:
 		size_t focalLengthIndex_X, focalLengthIndex_Y;
 		GetFocalLengthIndex(focalLengthIndex_X, focalLengthIndex_Y);
 
-		CHECK(focalLengthIndex_X == focalLengthIndex_Y);
-		CHECK(focalLengthIndex_X < params.size());
+		Check(focalLengthIndex_X == focalLengthIndex_Y);
+		Check(focalLengthIndex_X < params.size());
 		return params[focalLengthIndex_X];
 	}
 	inline double GetFocalLengthX() const
 	{
 		size_t focalLengthIndex_X, focalLengthIndex_Y;
 		GetFocalLengthIndex(focalLengthIndex_X, focalLengthIndex_Y);
-		CHECK(focalLengthIndex_X < params.size() && focalLengthIndex_Y < params.size());
+		Check(focalLengthIndex_X < params.size() && focalLengthIndex_Y < params.size());
 		return params[focalLengthIndex_X];
 	}
 	inline double GetFocalLengthY() const
 	{
 		size_t focalLengthIndex_X, focalLengthIndex_Y;
 		GetFocalLengthIndex(focalLengthIndex_X, focalLengthIndex_Y);
-		CHECK(focalLengthIndex_X < params.size() && focalLengthIndex_Y < params.size());
+		Check(focalLengthIndex_X < params.size() && focalLengthIndex_Y < params.size());
 		return params[focalLengthIndex_Y];
 	}
 	inline void SetFocalLength(double focalLength)
 	{
 		size_t focalLengthIndex_X, focalLengthIndex_Y;
 		GetFocalLengthIndex(focalLengthIndex_X, focalLengthIndex_Y);
-		CHECK(focalLengthIndex_X < params.size() && focalLengthIndex_Y < params.size());
+		Check(focalLengthIndex_X < params.size() && focalLengthIndex_Y < params.size());
 
 		params[focalLengthIndex_X] = focalLength;
 		params[focalLengthIndex_Y] = focalLength;
@@ -152,8 +152,8 @@ public:
 	{
 		size_t focalLengthIndex_X, focalLengthIndex_Y;
 		GetFocalLengthIndex(focalLengthIndex_X, focalLengthIndex_Y);
-		CHECK(focalLengthIndex_X != focalLengthIndex_Y);
-		CHECK(focalLengthIndex_X < params.size() && focalLengthIndex_Y < params.size());
+		Check(focalLengthIndex_X != focalLengthIndex_Y);
+		Check(focalLengthIndex_X < params.size() && focalLengthIndex_Y < params.size());
 
 		params[focalLengthIndex_X] = focalLengthX;
 	}
@@ -161,8 +161,8 @@ public:
 	{
 		size_t focalLengthIndex_X, focalLengthIndex_Y;
 		GetFocalLengthIndex(focalLengthIndex_X, focalLengthIndex_Y);
-		CHECK(focalLengthIndex_X != focalLengthIndex_Y);
-		CHECK(focalLengthIndex_X < params.size() && focalLengthIndex_Y < params.size());
+		Check(focalLengthIndex_X != focalLengthIndex_Y);
+		Check(focalLengthIndex_X < params.size() && focalLengthIndex_Y < params.size());
 
 		params[focalLengthIndex_Y] = focalLengthY;
 	}
@@ -180,7 +180,7 @@ public:
 	{
 		size_t principalPointIndex_X, principalPointIndex_Y;
 		GetPrincipalPointIndex(principalPointIndex_X, principalPointIndex_Y);
-		CHECK(principalPointIndex_X < params.size() && principalPointIndex_Y < params.size());
+		Check(principalPointIndex_X < params.size() && principalPointIndex_Y < params.size());
 
 		return params[principalPointIndex_X];
 	}
@@ -188,7 +188,7 @@ public:
 	{
 		size_t principalPointIndex_X, principalPointIndex_Y;
 		GetPrincipalPointIndex(principalPointIndex_X, principalPointIndex_Y);
-		CHECK(principalPointIndex_X < params.size() && principalPointIndex_Y < params.size());
+		Check(principalPointIndex_X < params.size() && principalPointIndex_Y < params.size());
 
 		return params[principalPointIndex_Y];
 	}
@@ -196,8 +196,8 @@ public:
 	{
 		size_t principalPointIndex_X, principalPointIndex_Y;
 		GetPrincipalPointIndex(principalPointIndex_X, principalPointIndex_Y);
-		CHECK(principalPointIndex_X != principalPointIndex_Y);
-		CHECK(principalPointIndex_X < params.size() && principalPointIndex_Y < params.size());
+		Check(principalPointIndex_X != principalPointIndex_Y);
+		Check(principalPointIndex_X < params.size() && principalPointIndex_Y < params.size());
 
 		params[principalPointIndex_X] = principalPointX;
 	}
@@ -205,8 +205,8 @@ public:
 	{
 		size_t principalPointIndex_X, principalPointIndex_Y;
 		GetPrincipalPointIndex(principalPointIndex_X, principalPointIndex_Y);
-		CHECK(principalPointIndex_X != principalPointIndex_Y);
-		CHECK(principalPointIndex_X < params.size() && principalPointIndex_Y < params.size());
+		Check(principalPointIndex_X != principalPointIndex_Y);
+		Check(principalPointIndex_X < params.size() && principalPointIndex_Y < params.size());
 
 		params[principalPointIndex_Y] = principalPointY;
 	}
@@ -214,13 +214,13 @@ public:
 	// 获取内参矩阵(包括焦距和主点, 不包括畸变参数)
 	inline Eigen::Matrix3d GetCalibrationMatrix() const
 	{
-		CHECK(cameraModel != nullptr);
+		Check(cameraModel != nullptr);
 
 		Eigen::Matrix3d K = Eigen::Matrix3d::Identity();
 
 		size_t focalLengthIndex_X, focalLengthIndex_Y;
 		cameraModel->GetFocalLengthIndex(focalLengthIndex_X, focalLengthIndex_Y);
-		CHECK(focalLengthIndex_X < params.size() && focalLengthIndex_Y < params.size());
+		Check(focalLengthIndex_X < params.size() && focalLengthIndex_Y < params.size());
 		K(0, 0) = params[focalLengthIndex_X];
 		K(1, 1) = params[focalLengthIndex_Y];
 		K(0, 2) = GetPrincipalPointX();
@@ -231,12 +231,12 @@ public:
 	// 获取参数类型
 	inline std::string GetParamsType() const
 	{
-		CHECK(cameraModel != nullptr);
+		Check(cameraModel != nullptr);
 		return cameraModel->GetParamsType();
 	}
 	inline size_t GetParamsNum() const
 	{
-		CHECK(cameraModel != nullptr);
+		Check(cameraModel != nullptr);
 		return cameraModel->GetParamsNum();
 	}
 	inline const std::vector<double>& GetParams() const noexcept
@@ -249,12 +249,12 @@ public:
 	}
 	inline double GetParams(size_t index) const
 	{
-		CHECK(index < params.size());
+		Check(index < params.size());
 		return params[index];
 	}
 	inline double& GetParams(size_t index)
 	{
-		CHECK(index < params.size());
+		Check(index < params.size());
 		return params[index];
 	}
 	inline void SetParams(const std::vector<double>& newParams) noexcept
@@ -310,38 +310,38 @@ public:
 	// 畸变校正: 从畸变的影像坐标系坐标转到理想的相机坐标系坐标
 	inline void ImageToCamera(float imagePointX, float imagePointY, float& cameraPointX, float& cameraPointY) const
 	{
-		CHECK(cameraModel != nullptr);
+		Check(cameraModel != nullptr);
 		float u, v, w;
 		cameraModel->ImageToCamera(params, imagePointX, imagePointY, u, v, w);
-		CHECK(abs(w) > 1e-6);
+		Check(abs(w) > 1e-6);
 		cameraPointX = u / w;
 		cameraPointY = v / w;
 	}
 	inline Eigen::Vector2d ImageToCamera(const Eigen::Vector2d& imagePoint) const
 	{
-		CHECK(cameraModel != nullptr);
+		Check(cameraModel != nullptr);
 		float u, v, w;
 		cameraModel->ImageToCamera(params, imagePoint(0), imagePoint(1), u, v, w);
-		CHECK(abs(w) > 1e-6);
+		Check(abs(w) > 1e-6);
 		return Eigen::Vector2d(u / w, v / w);
 	}
 
 	// 将影像平面中的阈值转换到相机坐标系下的阈值
 	inline double ImageToCameraThreshold(double threshold) const
 	{
-		CHECK(cameraModel != nullptr);
+		Check(cameraModel != nullptr);
 		return cameraModel->ImageToCameraThreshold(params, threshold);
 	}
 	
 	// 畸变引入: 从理想的相机坐标系坐标转到带畸变的影像坐标系坐标
 	inline void CameraToImage(float cameraPointX, float cameraPointY, float& imagePointX, float& imagePointY) const
 	{
-		CHECK(cameraModel != nullptr);
+		Check(cameraModel != nullptr);
 		cameraModel->CameraToImage(params, cameraPointX, cameraPointY, 1, imagePointX, imagePointY);
 	}
 	inline Eigen::Vector2d CameraToImage(const Eigen::Vector2d& cameraPoint) const
 	{
-		CHECK(cameraModel != nullptr);
+		Check(cameraModel != nullptr);
 		float imagePointX, imagePointY;
 		cameraModel->CameraToImage(params, cameraPoint(0), cameraPoint(1), 1, imagePointX, imagePointY);
 		return Eigen::Vector2d(imagePointX, imagePointY);
@@ -350,8 +350,8 @@ public:
 	// 缩放相机维度, 调整焦距和主点
 	inline void Rescale(double scale)
 	{
-		CHECK(scale > 0);
-		CHECK(cameraModel != nullptr);
+		Check(scale > 0);
+		Check(cameraModel != nullptr);
 
 		const double scaleX = std::round(scale * width) / width;
 		const double scaleY = std::round(scale * height) / height;
@@ -375,7 +375,7 @@ public:
 	}
 	inline void Rescale(size_t newWidth, size_t newHeight)
 	{
-		CHECK(cameraModel != nullptr);
+		Check(cameraModel != nullptr);
 
 		const double scaleX = newWidth * 1.0 / width;
 		const double scaleY = newHeight * 1.0 / height;

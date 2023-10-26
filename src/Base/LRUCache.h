@@ -13,8 +13,8 @@ class CLRUCache
 public:
 	CLRUCache(size_t maxSize, const std::function<CValueType(const CKeyType&)>& getterFunction): maxSize(maxSize), getterFunction(getterFunction)
 	{
-		CHECK(!!getterFunction);
-		CHECK(maxSize > 0);
+		Check(!!getterFunction);
+		Check(maxSize > 0);
 	}
 	~CLRUCache() = default;
 	size_t GetNumElements() const noexcept

@@ -4,13 +4,13 @@ using namespace std;
 
 CSIFTCPUMatcher::CSIFTCPUMatcher(const CSIFTMatchingOptions& options)
 {
-	options.Check();
+	options.CheckOptions();
 	this->options = options;
 }
 CSIFTMatches CSIFTCPUMatcher::Match(const CSIFTDescriptors& descriptors1, const CSIFTDescriptors& descriptors2)
 {
-	CHECK(descriptors1.cols() == 128 && descriptors2.cols() == 128);
-	CHECK(descriptors1.rows() != 0 && descriptors2.rows() != 0);
+	Check(descriptors1.cols() == 128 && descriptors2.cols() == 128);
+	Check(descriptors1.rows() != 0 && descriptors2.rows() != 0);
 
 	FlannIndexType flannIndex1 = BuildFlannIndex(descriptors1);
 	FlannIndexType flannIndex2 = BuildFlannIndex(descriptors2);
@@ -37,9 +37,9 @@ CSIFTMatches CSIFTCPUMatcher::Match(const CSIFTDescriptors& descriptors1, const 
 }
 void CSIFTCPUMatcher::MatchGuided(const CKeypoints& keypoints1, const CKeypoints& keypoints2, const CSIFTDescriptors& descriptors1, const CSIFTDescriptors& descriptors2, CTwoViewGeometry& twoViewGeometry)
 {
-	CHECK(descriptors1.cols() == 128 && descriptors2.cols() == 128);
-	CHECK(descriptors1.rows() != 0 && descriptors2.rows() != 0);
-	CHECK(keypoints1.size() == descriptors1.rows() && keypoints2.size() == descriptors2.rows());
+	Check(descriptors1.cols() == 128 && descriptors2.cols() == 128);
+	Check(descriptors1.rows() != 0 && descriptors2.rows() != 0);
+	Check(keypoints1.size() == descriptors1.rows() && keypoints2.size() == descriptors2.rows());
 	if (twoViewGeometry.type < 2 || twoViewGeometry.type > 6)
 	{
 		return;
@@ -148,7 +148,7 @@ bool CSIFTGPUMatcher::isUploadDescriptors1 = true;
 bool CSIFTGPUMatcher::isUploadDescriptors2 = true;
 CSIFTGPUMatcher::CSIFTGPUMatcher(const CSIFTMatchingOptions& options)
 {
-	options.Check();
+	options.CheckOptions();
 	this->options = options;
 
 	SiftGPU siftGPU;
@@ -157,9 +157,9 @@ CSIFTGPUMatcher::CSIFTGPUMatcher(const CSIFTMatchingOptions& options)
 
 	int gpuIndex = SetBestCudaDevice();
 	siftMatchGPU.SetLanguage(SiftMatchGPU::SIFTMATCH_CUDA_DEVICE0 + gpuIndex);
-	CHECK(siftMatchGPU.VerifyContextGL() != 0);
+	Check(siftMatchGPU.VerifyContextGL() != 0);
 
-	CHECK(siftMatchGPU.Allocate(options.maxNumMatches, options.doCrossCheck), "Allocate ERROR: Not enough GPU memory!");
+	Check(siftMatchGPU.Allocate(options.maxNumMatches, options.doCrossCheck), "Allocate ERROR: Not enough GPU memory!");
 	siftMatchGPU.gpu_index = gpuIndex;
 
 	lastDescriptors1Index = numeric_limits<size_t>::max();
@@ -169,8 +169,8 @@ CSIFTGPUMatcher::CSIFTGPUMatcher(const CSIFTMatchingOptions& options)
 }
 CSIFTMatches CSIFTGPUMatcher::Match(const CSIFTDescriptors& descriptors1, const CSIFTDescriptors& descriptors2)
 {
-	CHECK(descriptors1.cols() == 128 && descriptors2.cols() == 128);
-	CHECK(descriptors1.rows() != 0 && descriptors2.rows() != 0);
+	Check(descriptors1.cols() == 128 && descriptors2.cols() == 128);
+	Check(descriptors1.rows() != 0 && descriptors2.rows() != 0);
 
 	struct Uint32_Match
 	{
@@ -194,7 +194,7 @@ CSIFTMatches CSIFTGPUMatcher::Match(const CSIFTDescriptors& descriptors1, const 
 		OutputDebugStringA("ERROR: Feature matching failed!\n");
 		return CSIFTMatches(0);
 	}
-	CHECK(numMatches <= matchesInternal.size());
+	Check(numMatches <= matchesInternal.size());
 	matchesInternal.resize(numMatches);
 
 	CSIFTMatches matches(numMatches);
@@ -207,9 +207,9 @@ CSIFTMatches CSIFTGPUMatcher::Match(const CSIFTDescriptors& descriptors1, const 
 }
 void CSIFTGPUMatcher::MatchGuided(const CKeypoints& keypoints1, const CKeypoints& keypoints2, const CSIFTDescriptors& descriptors1, const CSIFTDescriptors& descriptors2, CTwoViewGeometry& twoViewGeometry)
 {
-	CHECK(descriptors1.cols() == 128 && descriptors2.cols() == 128);
-	CHECK(descriptors1.rows() != 0 && descriptors2.rows() != 0);
-	CHECK(keypoints1.size() == descriptors1.rows() && keypoints2.size() == descriptors2.rows());
+	Check(descriptors1.cols() == 128 && descriptors2.cols() == 128);
+	Check(descriptors1.rows() != 0 && descriptors2.rows() != 0);
+	Check(keypoints1.size() == descriptors1.rows() && keypoints2.size() == descriptors2.rows());
 	if (twoViewGeometry.type < 2 || twoViewGeometry.type > 6)
 	{
 		return;
@@ -271,7 +271,7 @@ void CSIFTGPUMatcher::MatchGuided(const CKeypoints& keypoints1, const CKeypoints
 		H = twoViewGeometry.H.cast<float>();
 		H_ptr = H.data();
 	}
-	CHECK(F_ptr != nullptr || H_ptr != nullptr);
+	Check(F_ptr != nullptr || H_ptr != nullptr);
 
 	struct Uint32_Match
 	{
@@ -287,7 +287,7 @@ void CSIFTGPUMatcher::MatchGuided(const CKeypoints& keypoints1, const CKeypoints
 		OutputDebugStringA("ERROR: Guided feature matching failed!\n");
 		return;
 	}
-	CHECK(numMatches <= options.maxNumMatches);
+	Check(numMatches <= options.maxNumMatches);
 	matchesInternal.resize(numMatches);
 	twoViewGeometry.inlierMatches.resize(numMatches);
 	for (size_t i = 0; i < numMatches; i++)

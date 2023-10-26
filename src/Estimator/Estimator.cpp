@@ -8,7 +8,7 @@ using namespace std;
 
 CEstimator::CEstimator(size_t minNumSamples) :minNumSamples(minNumSamples)
 {
-	CHECK(minNumSamples > 0);
+	Check(minNumSamples > 0);
 }
 size_t CEstimator::GetNumTrials(size_t minNumSamples, size_t numInliers, size_t numSamples, double confidence, double numTrialsMultiplier) const
 {
@@ -38,14 +38,14 @@ CP3PEstimator::CP3PEstimator():CEstimator(3)
 }
 vector<any> CP3PEstimator::Estimate(const vector<any>& points2D_Any, const vector<any>& points3D_Any)
 {
-	CHECK(points2D_Any.size() == 3 && points3D_Any.size() == 3);
-	CHECK(points2D_Any[0].type() == typeid(Eigen::Vector2d) && points3D_Any[0].type() == typeid(Eigen::Vector3d));
+	Check(points2D_Any.size() == 3 && points3D_Any.size() == 3);
+	Check(points2D_Any[0].type() == typeid(Eigen::Vector2d) && points3D_Any[0].type() == typeid(Eigen::Vector3d));
 
     return TypeVec2AnyVec(Estimate(AnyVec2TypeVec<Eigen::Vector2d>(points2D_Any), AnyVec2TypeVec<Eigen::Vector3d>(points3D_Any)));
 }
 vector<Eigen::Matrix3x4d> CP3PEstimator::Estimate(const vector<Eigen::Vector2d>& points2D, const vector<Eigen::Vector3d>& points3D) const
 {
-    CHECK(points2D.size() == minNumSamples && points3D.size() == minNumSamples);
+    Check(points2D.size() == minNumSamples && points3D.size() == minNumSamples);
 
     // Step 1. 坐标预处理
     Eigen::Matrix3d points3DWorld;
@@ -181,7 +181,7 @@ vector<Eigen::Matrix3x4d> CP3PEstimator::Estimate(const vector<Eigen::Vector2d>&
 CP3PEstimateRANSACReport CP3PEstimator::EstimateRANSAC(const std::vector<Eigen::Vector2d>& X, const std::vector<Eigen::Vector3d>& Y, const CRANSACOptions& options, CSupportMeasurer* supportMeasurer, CSampler* sampler) const
 {
     // Step 1. 初始化. 检查输入向量大小, 初始化结果, 检查特殊情况
-    CHECK(X.size() == Y.size());
+    Check(X.size() == Y.size());
 
     const size_t numSamples = X.size();
     CP3PEstimateRANSACReport report;
@@ -230,7 +230,7 @@ CP3PEstimateRANSACReport CP3PEstimator::EstimateRANSAC(const std::vector<Eigen::
         for (const Eigen::Matrix3x4d& sampledModel : sampledModels)
         {
             Residuals(X, Y, sampledModel, residuals); // 对于每一个估计出的模型, 计算其与所有数据点的残差
-            CHECK(residuals.size() == numSamples);
+            Check(residuals.size() == numSamples);
 
             const CSupport support = supportMeasurer->Evaluate(residuals, maxResidual); // 评估这个模型的支持度
             if (supportMeasurer->Compare(support, bestSupport)) // 如果新的支持度比当前最好的支持度更好, 就更新最好的支持度和最好的模型
@@ -267,7 +267,7 @@ CP3PEstimateRANSACReport CP3PEstimator::EstimateRANSAC(const std::vector<Eigen::
         return report;
     }
     Residuals(X, Y, report.model, residuals);
-    CHECK(residuals.size() == numSamples);
+    Check(residuals.size() == numSamples);
 
     report.inlierMask.resize(numSamples);
     for (size_t i = 0; i < residuals.size(); i++) // 判断每个样本是否为内点
@@ -288,14 +288,14 @@ CP3PEstimateRANSACReport CP3PEstimator::EstimateRANSAC(const std::vector<Eigen::
 }
 void CP3PEstimator::Residuals(const vector<any>& points2D_Any, const vector<any>& points3D_Any, const any& projectMatrix_Any, vector<double>& residuals)
 {
-    CHECK(points2D_Any.size() == points3D_Any.size() && !points2D_Any.empty());
-    CHECK(points2D_Any[0].type() == typeid(Eigen::Vector2d) && points3D_Any[0].type() == typeid(Eigen::Vector3d) && projectMatrix_Any.type() == typeid(Eigen::Matrix3x4d));
+    Check(points2D_Any.size() == points3D_Any.size() && !points2D_Any.empty());
+    Check(points2D_Any[0].type() == typeid(Eigen::Vector2d) && points3D_Any[0].type() == typeid(Eigen::Vector3d) && projectMatrix_Any.type() == typeid(Eigen::Matrix3x4d));
 
     Residuals(AnyVec2TypeVec<Eigen::Vector2d>(points2D_Any), AnyVec2TypeVec<Eigen::Vector3d>(points3D_Any), any_cast<Eigen::Matrix3x4d>(projectMatrix_Any), residuals);
 }
 void CP3PEstimator::Residuals(const vector<Eigen::Vector2d>& points2D, const vector<Eigen::Vector3d>& points3D, const Eigen::Matrix3x4d& projectMatrix, vector<double>& residuals) const
 {
-    CHECK(points2D.size() == points3D.size() && !points2D.empty());
+    Check(points2D.size() == points3D.size() && !points2D.empty());
 
     ComputeSquaredReprojectionError(points2D, points3D, projectMatrix, residuals);
 }
@@ -306,16 +306,16 @@ CEPnPEstimator::CEPnPEstimator() :CEstimator(4)
 }
 vector<any> CEPnPEstimator::Estimate(const vector<any>& points2D_Any, const vector<any>& points3D_Any)
 {
-    CHECK(points2D_Any.size() == points3D_Any.size());
-    CHECK(points2D_Any.size() >= minNumSamples);
-    CHECK(points2D_Any[0].type() == typeid(Eigen::Vector2d) && points3D_Any[0].type() == typeid(Eigen::Vector3d));
+    Check(points2D_Any.size() == points3D_Any.size());
+    Check(points2D_Any.size() >= minNumSamples);
+    Check(points2D_Any[0].type() == typeid(Eigen::Vector2d) && points3D_Any[0].type() == typeid(Eigen::Vector3d));
 
     return TypeVec2AnyVec(Estimate(AnyVec2TypeVec<Eigen::Vector2d>(points2D_Any), AnyVec2TypeVec<Eigen::Vector3d>(points3D_Any)));
 }
 vector<Eigen::Matrix3x4d> CEPnPEstimator::Estimate(const vector<Eigen::Vector2d>& points2D, const vector<Eigen::Vector3d>& points3D)
 {
-    CHECK(points2D.size() == points3D.size());
-    CHECK(points2D.size() >= minNumSamples);
+    Check(points2D.size() == points3D.size());
+    Check(points2D.size() >= minNumSamples);
 
     Eigen::Matrix3x4d projectMatrix;
     if (!ComputePose(points2D, points3D, projectMatrix))
@@ -326,14 +326,14 @@ vector<Eigen::Matrix3x4d> CEPnPEstimator::Estimate(const vector<Eigen::Vector2d>
 }
 void CEPnPEstimator::Residuals(const vector<any>& points2D_Any, const vector<any>& points3D_Any, const any& projectMatrix_Any, vector<double>& residuals)
 {
-    CHECK(points2D_Any.size() == points3D_Any.size() && !points2D_Any.empty());
-    CHECK(points2D_Any[0].type() == typeid(Eigen::Vector2d) && points3D_Any[0].type() == typeid(Eigen::Vector3d) && projectMatrix_Any.type() == typeid(Eigen::Matrix3x4d));
+    Check(points2D_Any.size() == points3D_Any.size() && !points2D_Any.empty());
+    Check(points2D_Any[0].type() == typeid(Eigen::Vector2d) && points3D_Any[0].type() == typeid(Eigen::Vector3d) && projectMatrix_Any.type() == typeid(Eigen::Matrix3x4d));
 
     Residuals(AnyVec2TypeVec<Eigen::Vector2d>(points2D_Any), AnyVec2TypeVec<Eigen::Vector3d>(points3D_Any), any_cast<Eigen::Matrix3x4d>(projectMatrix_Any), residuals);
 }
 void CEPnPEstimator::Residuals(const vector<Eigen::Vector2d>& points2D, const vector<Eigen::Vector3d>& points3D, const Eigen::Matrix3x4d& projectMatrix, vector<double>& residuals)
 {
-    CHECK(points2D.size() == points3D.size() && !points2D.empty());
+    Check(points2D.size() == points3D.size() && !points2D.empty());
     ComputeSquaredReprojectionError(points2D, points3D, projectMatrix, residuals);
 }
 bool CEPnPEstimator::ComputePose(const vector<Eigen::Vector2d>& points2D, const vector<Eigen::Vector3d>& points3D, Eigen::Matrix3x4d& projectMatrix)
@@ -749,16 +749,16 @@ CEssentialMatrixEstimator_5Points::CEssentialMatrixEstimator_5Points() :CEstimat
 }
 vector<any> CEssentialMatrixEstimator_5Points::Estimate(const vector<any>& points1_Any, const vector<any>& points2_Any)
 {
-    CHECK(points1_Any.size() == points2_Any.size());
-    CHECK(points1_Any.size() >= minNumSamples);
-    CHECK(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d));
+    Check(points1_Any.size() == points2_Any.size());
+    Check(points1_Any.size() >= minNumSamples);
+    Check(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d));
 
     return TypeVec2AnyVec(Estimate(AnyVec2TypeVec<Eigen::Vector2d>(points1_Any), AnyVec2TypeVec<Eigen::Vector2d>(points2_Any)));
 }
 vector<Eigen::Matrix3d> CEssentialMatrixEstimator_5Points::Estimate(const vector<Eigen::Vector2d>& points1, const vector<Eigen::Vector2d>& points2) const
 {
-    CHECK(points1.size() == points2.size());
-    CHECK(points1.size() >= minNumSamples);
+    Check(points1.size() == points2.size());
+    Check(points1.size() >= minNumSamples);
 
     // Step 1. 构建矩阵Q. 该矩阵用于从points1和points2对应点中提取几何关系
     Eigen::Matrix<double, Eigen::Dynamic, 9> Q(points1.size(), 9);
@@ -861,7 +861,7 @@ vector<Eigen::Matrix3d> CEssentialMatrixEstimator_5Points::Estimate(const vector
 CEssentialMatrixEstimate_5PointsRANSACReport CEssentialMatrixEstimator_5Points::EstimateLoRANSAC(const std::vector<Eigen::Vector2d>& X, const std::vector<Eigen::Vector2d>& Y, const CRANSACOptions& options, CSupportMeasurer* supportMeasurer, CSampler* sampler) const
 {
     // Step 1. 初始化. 检查输入向量大小, 初始化结果, 检查特殊情况
-    CHECK(X.size() == Y.size());
+    Check(X.size() == Y.size());
 
     const size_t numSamples = X.size();
     CEssentialMatrixEstimate_5PointsRANSACReport report;
@@ -913,7 +913,7 @@ CEssentialMatrixEstimate_5PointsRANSACReport CEssentialMatrixEstimator_5Points::
         for (const Eigen::Matrix3d& sampledModel : sampledModels)
         {
             Residuals(X, Y, sampledModel, residuals); // 对于每一个估计出的模型, 计算其与所有数据点的残差
-            CHECK(residuals.size() == numSamples);
+            Check(residuals.size() == numSamples);
 
             const CSupport support = supportMeasurer->Evaluate(residuals, maxResidual); // 评估这个模型的支持度
 
@@ -947,7 +947,7 @@ CEssentialMatrixEstimate_5PointsRANSACReport CEssentialMatrixEstimator_5Points::
                         for (const Eigen::Matrix3d& localModel : localModels)
                         {
                             Residuals(X, Y, localModel, residuals);
-                            CHECK(residuals.size() == numSamples);
+                            Check(residuals.size() == numSamples);
                             const CSupport localSupport = supportMeasurer->Evaluate(residuals, maxResidual);
 
                             // 检查局部优化模型是否更优
@@ -997,7 +997,7 @@ CEssentialMatrixEstimate_5PointsRANSACReport CEssentialMatrixEstimator_5Points::
 
     // 这将对最佳模型的残差进行两次计算, 但避免了对每个评估模型都复制和填充内点掩码, 这种方法其实更快
     Residuals(X, Y, report.model, residuals);
-    CHECK(residuals.size() == numSamples);
+    Check(residuals.size() == numSamples);
     report.inlierMask.resize(numSamples);
 
     for (size_t i = 0; i < residuals.size(); i++) // 判断每个样本是否为内点
@@ -1018,14 +1018,14 @@ CEssentialMatrixEstimate_5PointsRANSACReport CEssentialMatrixEstimator_5Points::
 }
 void CEssentialMatrixEstimator_5Points::Residuals(const vector<any>& points1_Any, const vector<any>& points2_Any, const any& E_any, vector<double>& residuals)
 {
-    CHECK(points1_Any.size() == points2_Any.size() && !points1_Any.empty());
-    CHECK(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d) && E_any.type() == typeid(Eigen::Matrix3d));
+    Check(points1_Any.size() == points2_Any.size() && !points1_Any.empty());
+    Check(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d) && E_any.type() == typeid(Eigen::Matrix3d));
 
     Residuals(AnyVec2TypeVec<Eigen::Vector2d>(points1_Any), AnyVec2TypeVec<Eigen::Vector2d>(points2_Any), any_cast<Eigen::Matrix3d>(E_any), residuals);
 }
 void CEssentialMatrixEstimator_5Points::Residuals(const vector<Eigen::Vector2d>& points1, const vector<Eigen::Vector2d>& points2, const Eigen::Matrix3d& E, vector<double>& residuals) const
 {
-    CHECK(points1.size() == points2.size() && !points1.empty());
+    Check(points1.size() == points2.size() && !points1.empty());
     ComputeSquaredSampsonError(points1, points2, E, residuals);
 }
 void CEssentialMatrixEstimator_5Points::CalculateA(const Eigen::Matrix<double, 9, 4>& E, Eigen::Matrix<double, 10, 20>& A) const
@@ -3294,16 +3294,16 @@ CEssentialMatrixEstimator_8Points::CEssentialMatrixEstimator_8Points() :CEstimat
 }
 vector<any> CEssentialMatrixEstimator_8Points::Estimate(const vector<any>& points1_Any, const vector<any>& points2_Any)
 {
-    CHECK(points1_Any.size() == points2_Any.size());
-    CHECK(points1_Any.size() >= minNumSamples);
-    CHECK(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d));
+    Check(points1_Any.size() == points2_Any.size());
+    Check(points1_Any.size() >= minNumSamples);
+    Check(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d));
 
     return TypeVec2AnyVec(Estimate(AnyVec2TypeVec<Eigen::Vector2d>(points1_Any), AnyVec2TypeVec<Eigen::Vector2d>(points2_Any)));
 }
 vector<Eigen::Matrix3d> CEssentialMatrixEstimator_8Points::Estimate(const vector<Eigen::Vector2d>& points1, const vector<Eigen::Vector2d>& points2) const
 {
-    CHECK(points1.size() == points2.size());
-    CHECK(points1.size() >= minNumSamples);
+    Check(points1.size() == points2.size());
+    Check(points1.size() >= minNumSamples);
 
     // Step 1. 为了提高数值稳定性, 对图像点进行居中和归一化处理
     vector<Eigen::Vector2d> normedPoints1;
@@ -3345,13 +3345,13 @@ vector<Eigen::Matrix3d> CEssentialMatrixEstimator_8Points::Estimate(const vector
 }
 void CEssentialMatrixEstimator_8Points::Residuals(const vector<any>& points1_Any, const vector<any>& points2_Any, const any& E_any, vector<double>& residuals)
 {
-    CHECK(points1_Any.size() == points2_Any.size() && !points1_Any.empty());
-    CHECK(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d) && E_any.type() == typeid(Eigen::Matrix3d));
+    Check(points1_Any.size() == points2_Any.size() && !points1_Any.empty());
+    Check(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d) && E_any.type() == typeid(Eigen::Matrix3d));
     Residuals(AnyVec2TypeVec<Eigen::Vector2d>(points1_Any), AnyVec2TypeVec<Eigen::Vector2d>(points2_Any), any_cast<Eigen::Matrix3d>(E_any), residuals);
 }
 void CEssentialMatrixEstimator_8Points::Residuals(const vector<Eigen::Vector2d>& points1, const vector<Eigen::Vector2d>& points2, const Eigen::Matrix3d& E, vector<double>& residuals) const
 {
-    CHECK(points1.size() == points2.size() && !points1.empty());
+    Check(points1.size() == points2.size() && !points1.empty());
     ComputeSquaredSampsonError(points1, points2, E, residuals);
 }
 
@@ -3361,14 +3361,14 @@ CFundamentalMatrixEstimator_7Points::CFundamentalMatrixEstimator_7Points() :CEst
 }
 vector<any> CFundamentalMatrixEstimator_7Points::Estimate(const vector<any>& points1_Any, const vector<any>& points2_Any)
 {
-    CHECK(points1_Any.size() == minNumSamples && points2_Any.size() == minNumSamples);
-    CHECK(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d));
+    Check(points1_Any.size() == minNumSamples && points2_Any.size() == minNumSamples);
+    Check(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d));
 
     return TypeVec2AnyVec(Estimate(AnyVec2TypeVec<Eigen::Vector2d>(points1_Any), AnyVec2TypeVec<Eigen::Vector2d>(points2_Any)));
 }
 vector<Eigen::Matrix3d> CFundamentalMatrixEstimator_7Points::Estimate(const vector<Eigen::Vector2d>& points1, const vector<Eigen::Vector2d>& points2) const
 {
-    CHECK(points1.size() == minNumSamples && points2.size() == minNumSamples);
+    Check(points1.size() == minNumSamples && points2.size() == minNumSamples);
 
     // 这里不需要对点进行归一化
     // 建立方程系统: [points2(i,:), 1]' * F * [points1(i,:), 1]'
@@ -3469,7 +3469,7 @@ vector<Eigen::Matrix3d> CFundamentalMatrixEstimator_7Points::Estimate(const vect
 CFundamentalMatrixEstimate_7PointsRANSACReport CFundamentalMatrixEstimator_7Points::EstimateLoRANSAC(const std::vector<Eigen::Vector2d>& X, const std::vector<Eigen::Vector2d>& Y, const CRANSACOptions& options, CSupportMeasurer* supportMeasurer, CSampler* sampler) const
 {
     // Step 1. 初始化. 检查输入向量大小, 初始化结果, 检查特殊情况
-    CHECK(X.size() == Y.size());
+    Check(X.size() == Y.size());
 
     const size_t numSamples = X.size();
     CFundamentalMatrixEstimate_7PointsRANSACReport report;
@@ -3523,7 +3523,7 @@ CFundamentalMatrixEstimate_7PointsRANSACReport CFundamentalMatrixEstimator_7Poin
         for (const Eigen::Matrix3d& sampledModel : sampledModels)
         {
             Residuals(X, Y, sampledModel, residuals); // 对于每一个估计出的模型, 计算其与所有数据点的残差
-            CHECK(residuals.size() == numSamples);
+            Check(residuals.size() == numSamples);
 
             const CSupport support = supportMeasurer->Evaluate(residuals, maxResidual); // 评估这个模型的支持度
 
@@ -3557,7 +3557,7 @@ CFundamentalMatrixEstimate_7PointsRANSACReport CFundamentalMatrixEstimator_7Poin
                         for (const Eigen::Matrix3d& localModel : localModels)
                         {
                             localEstimator.Residuals(X, Y, localModel, residuals);
-                            CHECK(residuals.size() == numSamples);
+                            Check(residuals.size() == numSamples);
                             const CSupport localSupport = supportMeasurer->Evaluate(residuals, maxResidual);
 
                             // 检查局部优化模型是否更优
@@ -3614,7 +3614,7 @@ CFundamentalMatrixEstimate_7PointsRANSACReport CFundamentalMatrixEstimator_7Poin
     {
         Residuals(X, Y, report.model, residuals);
     }
-    CHECK(residuals.size() == numSamples);
+    Check(residuals.size() == numSamples);
     report.inlierMask.resize(numSamples);
 
     for (size_t i = 0; i < residuals.size(); i++) // 判断每个样本是否为内点
@@ -3635,14 +3635,14 @@ CFundamentalMatrixEstimate_7PointsRANSACReport CFundamentalMatrixEstimator_7Poin
 }
 void CFundamentalMatrixEstimator_7Points::Residuals(const vector<any>& points1_Any, const vector<any>& points2_Any, const any& F_any, vector<double>& residuals)
 {
-    CHECK(points1_Any.size() == points2_Any.size() && !points1_Any.empty());
-    CHECK(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d) && F_any.type() == typeid(Eigen::Matrix3d));
+    Check(points1_Any.size() == points2_Any.size() && !points1_Any.empty());
+    Check(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d) && F_any.type() == typeid(Eigen::Matrix3d));
 
     Residuals(AnyVec2TypeVec<Eigen::Vector2d>(points1_Any), AnyVec2TypeVec<Eigen::Vector2d>(points2_Any), any_cast<Eigen::Matrix3d>(F_any), residuals);
 }
 void CFundamentalMatrixEstimator_7Points::Residuals(const vector<Eigen::Vector2d>& points1, const vector<Eigen::Vector2d>& points2, const Eigen::Matrix3d& F, vector<double>& residuals) const
 {
-    CHECK(points1.size() == points2.size() && !points1.empty());
+    Check(points1.size() == points2.size() && !points1.empty());
     ComputeSquaredSampsonError(points1, points2, F, residuals);
 }
 
@@ -3652,16 +3652,16 @@ CFundamentalMatrixEstimator_8Points::CFundamentalMatrixEstimator_8Points() :CEst
 }
 vector<any> CFundamentalMatrixEstimator_8Points::Estimate(const vector<any>& points1_Any, const vector<any>& points2_Any)
 {
-    CHECK(points1_Any.size() == points2_Any.size());
-    CHECK(points1_Any.size() >= minNumSamples);
-    CHECK(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d));
+    Check(points1_Any.size() == points2_Any.size());
+    Check(points1_Any.size() >= minNumSamples);
+    Check(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d));
 
     return TypeVec2AnyVec(Estimate(AnyVec2TypeVec<Eigen::Vector2d>(points1_Any), AnyVec2TypeVec<Eigen::Vector2d>(points2_Any)));
 }
 vector<Eigen::Matrix3d> CFundamentalMatrixEstimator_8Points::Estimate(const vector<Eigen::Vector2d>& points1, const vector<Eigen::Vector2d>& points2) const
 {
-    CHECK(points1.size() == points2.size());
-    CHECK(points1.size() >= minNumSamples);
+    Check(points1.size() == points2.size());
+    Check(points1.size() >= minNumSamples);
 
     // 为了提高数值稳定性, 对图像点进行居中和归一化
     vector<Eigen::Vector2d> normedPoints1;
@@ -3697,14 +3697,14 @@ vector<Eigen::Matrix3d> CFundamentalMatrixEstimator_8Points::Estimate(const vect
 }
 void CFundamentalMatrixEstimator_8Points::Residuals(const vector<any>& points1_Any, const vector<any>& points2_Any, const any& F_any, vector<double>& residuals)
 {
-    CHECK(points1_Any.size() == points2_Any.size() && !points1_Any.empty());
-    CHECK(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d) && F_any.type() == typeid(Eigen::Matrix3d));
+    Check(points1_Any.size() == points2_Any.size() && !points1_Any.empty());
+    Check(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d) && F_any.type() == typeid(Eigen::Matrix3d));
 
     Residuals(AnyVec2TypeVec<Eigen::Vector2d>(points1_Any), AnyVec2TypeVec<Eigen::Vector2d>(points2_Any), any_cast<Eigen::Matrix3d>(F_any), residuals);
 }
 void CFundamentalMatrixEstimator_8Points::Residuals(const vector<Eigen::Vector2d>& points1, const vector<Eigen::Vector2d>& points2, const Eigen::Matrix3d& F, vector<double>& residuals) const
 {
-    CHECK(points1.size() == points2.size() && !points1.empty());
+    Check(points1.size() == points2.size() && !points1.empty());
 
     ComputeSquaredSampsonError(points1, points2, F, residuals);
 }
@@ -3715,15 +3715,15 @@ CHomographyMatrixEstimator::CHomographyMatrixEstimator() :CEstimator(4)
 }
 vector<any> CHomographyMatrixEstimator::Estimate(const vector<any>& points1_Any, const vector<any>& points2_Any)
 {
-    CHECK(points1_Any.size() == points2_Any.size());
-    CHECK(points1_Any.size() >= minNumSamples);
-    CHECK(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d));
+    Check(points1_Any.size() == points2_Any.size());
+    Check(points1_Any.size() >= minNumSamples);
+    Check(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d));
     return TypeVec2AnyVec(Estimate(AnyVec2TypeVec<Eigen::Vector2d>(points1_Any), AnyVec2TypeVec<Eigen::Vector2d>(points2_Any)));
 }
 vector<Eigen::Matrix3d> CHomographyMatrixEstimator::Estimate(const vector<Eigen::Vector2d>& points1, const vector<Eigen::Vector2d>& points2) const
 {
-    CHECK(points1.size() == points2.size());
-    CHECK(points1.size() >= minNumSamples);
+    Check(points1.size() == points2.size());
+    Check(points1.size() >= minNumSamples);
 
     const size_t N = points1.size();
 
@@ -3769,7 +3769,7 @@ vector<Eigen::Matrix3d> CHomographyMatrixEstimator::Estimate(const vector<Eigen:
 CHomographyMatrixEstimateRANSACReport CHomographyMatrixEstimator::EstimateLoRANSAC(const std::vector<Eigen::Vector2d>& X, const std::vector<Eigen::Vector2d>& Y, const CRANSACOptions& options, CSupportMeasurer* supportMeasurer, CSampler* sampler) const
 {
     // Step 1. 初始化. 检查输入向量大小, 初始化结果, 检查特殊情况
-    CHECK(X.size() == Y.size());
+    Check(X.size() == Y.size());
 
     const size_t numSamples = X.size();
     CHomographyMatrixEstimateRANSACReport report;
@@ -3821,7 +3821,7 @@ CHomographyMatrixEstimateRANSACReport CHomographyMatrixEstimator::EstimateLoRANS
         for (const Eigen::Matrix3d& sampledModel : sampledModels)
         {
             Residuals(X, Y, sampledModel, residuals); // 对于每一个估计出的模型, 计算其与所有数据点的残差
-            CHECK(residuals.size() == numSamples);
+            Check(residuals.size() == numSamples);
 
             const CSupport support = supportMeasurer->Evaluate(residuals, maxResidual); // 评估这个模型的支持度
 
@@ -3855,7 +3855,7 @@ CHomographyMatrixEstimateRANSACReport CHomographyMatrixEstimator::EstimateLoRANS
                         for (const Eigen::Matrix3d& localModel : localModels)
                         {
                             Residuals(X, Y, localModel, residuals);
-                            CHECK(residuals.size() == numSamples);
+                            Check(residuals.size() == numSamples);
                             const CSupport localSupport = supportMeasurer->Evaluate(residuals, maxResidual);
 
                             // 检查局部优化模型是否更优
@@ -3905,7 +3905,7 @@ CHomographyMatrixEstimateRANSACReport CHomographyMatrixEstimator::EstimateLoRANS
 
     // 这将对最佳模型的残差进行两次计算, 但避免了对每个评估模型都复制和填充内点掩码, 这种方法其实更快
     Residuals(X, Y, report.model, residuals);
-    CHECK(residuals.size() == numSamples);
+    Check(residuals.size() == numSamples);
     report.inlierMask.resize(numSamples);
 
     for (size_t i = 0; i < residuals.size(); i++) // 判断每个样本是否为内点
@@ -3926,14 +3926,14 @@ CHomographyMatrixEstimateRANSACReport CHomographyMatrixEstimator::EstimateLoRANS
 }
 void CHomographyMatrixEstimator::Residuals(const vector<any>& points1_Any, const vector<any>& points2_Any, const any& H_Any, vector<double>& residuals)
 {
-    CHECK(points1_Any.size() == points2_Any.size() && !points1_Any.empty());
-    CHECK(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d) && H_Any.type() == typeid(Eigen::Matrix3d));
+    Check(points1_Any.size() == points2_Any.size() && !points1_Any.empty());
+    Check(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d) && H_Any.type() == typeid(Eigen::Matrix3d));
 
     Residuals(AnyVec2TypeVec<Eigen::Vector2d>(points1_Any), AnyVec2TypeVec<Eigen::Vector2d>(points2_Any), any_cast<Eigen::Matrix3d>(H_Any), residuals);
 }
 void CHomographyMatrixEstimator::Residuals(const vector<Eigen::Vector2d>& points1, const vector<Eigen::Vector2d>& points2, const Eigen::Matrix3d& H, vector<double>& residuals) const
 {
-    CHECK(points1.size() == points2.size() && !points1.empty());
+    Check(points1.size() == points2.size() && !points1.empty());
 
     residuals.resize(points1.size());
 
@@ -3973,15 +3973,15 @@ CAffineTransformEstimator::CAffineTransformEstimator() :CEstimator(3)
 }
 vector<any> CAffineTransformEstimator::Estimate(const vector<any>& points1_Any, const vector<any>& points2_Any)
 {
-    CHECK(points1_Any.size() == points2_Any.size());
-    CHECK(points1_Any.size() >= minNumSamples);
-    CHECK(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d));
+    Check(points1_Any.size() == points2_Any.size());
+    Check(points1_Any.size() >= minNumSamples);
+    Check(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d));
     return TypeVec2AnyVec(Estimate(AnyVec2TypeVec<Eigen::Vector2d>(points1_Any), AnyVec2TypeVec<Eigen::Vector2d>(points2_Any)));
 }
 vector<Eigen::Matrix<double, 2, 3>> CAffineTransformEstimator::Estimate(const vector<Eigen::Vector2d>& points1, const vector<Eigen::Vector2d>& points2) const
 {
-    CHECK(points1.size() == points2.size());
-    CHECK(points1.size() >= minNumSamples);
+    Check(points1.size() == points2.size());
+    Check(points1.size() >= minNumSamples);
 
     // 建立用来求解仿射变换的最小二乘解的线性系统
     Eigen::MatrixXd C(2 * points1.size(), 6);
@@ -4009,14 +4009,14 @@ vector<Eigen::Matrix<double, 2, 3>> CAffineTransformEstimator::Estimate(const ve
 }
 void CAffineTransformEstimator::Residuals(const vector<any>& points1_Any, const vector<any>& points2_Any, const any& A_Any, vector<double>& residuals)
 {
-    CHECK(points1_Any.size() == points2_Any.size() && !points1_Any.empty());
-    CHECK(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d) && A_Any.type() == typeid(Eigen::Matrix<double, 2, 3>));
+    Check(points1_Any.size() == points2_Any.size() && !points1_Any.empty());
+    Check(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d) && A_Any.type() == typeid(Eigen::Matrix<double, 2, 3>));
     
     Residuals(AnyVec2TypeVec<Eigen::Vector2d>(points1_Any), AnyVec2TypeVec<Eigen::Vector2d>(points2_Any), any_cast<Eigen::Matrix<double, 2, 3>>(A_Any), residuals);
 }
 void CAffineTransformEstimator::Residuals(const vector<Eigen::Vector2d>& points1, const vector<Eigen::Vector2d>& points2, const Eigen::Matrix<double, 2, 3>& A, vector<double>& residuals) const
 {
-    CHECK(points1.size() == points2.size() && !points1.empty());
+    Check(points1.size() == points2.size() && !points1.empty());
     residuals.resize(points1.size());
 
     // 这段代码可能没有Eigen表达式那么优雅, 但在各种测试中它明显更快
@@ -4050,15 +4050,15 @@ CSimilarityTransformEstimator::CSimilarityTransformEstimator(bool isEstimateScal
 }
 vector<any> CSimilarityTransformEstimator::Estimate(const vector<any>& src_Any, const vector<any>& dst_Any)
 {
-    CHECK(src_Any.size() == dst_Any.size());
-    CHECK(src_Any.size() >= minNumSamples);
-    CHECK(src_Any[0].type() == typeid(Eigen::Vector3d) && dst_Any[0].type() == typeid(Eigen::Vector3d));
+    Check(src_Any.size() == dst_Any.size());
+    Check(src_Any.size() >= minNumSamples);
+    Check(src_Any[0].type() == typeid(Eigen::Vector3d) && dst_Any[0].type() == typeid(Eigen::Vector3d));
     return TypeVec2AnyVec(Estimate(AnyVec2TypeVec<Eigen::Vector3d>(src_Any), AnyVec2TypeVec<Eigen::Vector3d>(dst_Any)));
 }
 vector<Eigen::Matrix<double, 3, 4>> CSimilarityTransformEstimator::Estimate(const vector<Eigen::Vector3d>& src, const vector<Eigen::Vector3d>& dst) const
 {
-    CHECK(src.size() == dst.size());
-    CHECK(src.size() >= minNumSamples);
+    Check(src.size() == dst.size());
+    Check(src.size() >= minNumSamples);
 
     Eigen::Matrix<double, 3, Eigen::Dynamic> srcMat(3, src.size());
     Eigen::Matrix<double, 3, Eigen::Dynamic> dstMat(3, dst.size());
@@ -4077,14 +4077,14 @@ vector<Eigen::Matrix<double, 3, 4>> CSimilarityTransformEstimator::Estimate(cons
 }
 void CSimilarityTransformEstimator::Residuals(const vector<any>& src_Any, const vector<any>& dst_Any, const any& matrix_Any, vector<double>& residuals)
 {
-    CHECK(src_Any.size() == dst_Any.size() && !src_Any.empty());
-    CHECK(src_Any[0].type() == typeid(Eigen::Vector3d) && dst_Any[0].type() == typeid(Eigen::Vector3d) && matrix_Any.type() == typeid(Eigen::Matrix<double, 3, 4>));
+    Check(src_Any.size() == dst_Any.size() && !src_Any.empty());
+    Check(src_Any[0].type() == typeid(Eigen::Vector3d) && dst_Any[0].type() == typeid(Eigen::Vector3d) && matrix_Any.type() == typeid(Eigen::Matrix<double, 3, 4>));
 
     Residuals(AnyVec2TypeVec<Eigen::Vector3d>(src_Any), AnyVec2TypeVec<Eigen::Vector3d>(dst_Any), any_cast<Eigen::Matrix<double, 3, 4>>(matrix_Any), residuals);
 }
 void CSimilarityTransformEstimator::Residuals(const vector<Eigen::Vector3d>& src, const vector<Eigen::Vector3d>& dst, const Eigen::Matrix<double, 3, 4>& matrix, vector<double>& residuals) const
 {
-    CHECK(src.size() == dst.size() && !src.empty());
+    Check(src.size() == dst.size() && !src.empty());
     residuals.resize(src.size());
 
     for (size_t i = 0; i < src.size(); i++) 
@@ -4100,15 +4100,15 @@ CTranslationTransformEstimator::CTranslationTransformEstimator() : CEstimator(1)
 }
 vector<any> CTranslationTransformEstimator::Estimate(const vector<any>& points1_Any, const vector<any>& points2_Any)
 {
-    CHECK(points1_Any.size() == points2_Any.size());
-    CHECK(points1_Any.size() >= minNumSamples);
-    CHECK(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d));
+    Check(points1_Any.size() == points2_Any.size());
+    Check(points1_Any.size() >= minNumSamples);
+    Check(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d));
     return TypeVec2AnyVec(Estimate(AnyVec2TypeVec<Eigen::Vector2d>(points1_Any), AnyVec2TypeVec<Eigen::Vector2d>(points2_Any)));
 }
 vector<Eigen::Vector2d> CTranslationTransformEstimator::Estimate(const vector<Eigen::Vector2d>& points1, const vector<Eigen::Vector2d>& points2) const
 {
-    CHECK(points1.size() == points2.size());
-    CHECK(points1.size() >= minNumSamples);
+    Check(points1.size() == points2.size());
+    Check(points1.size() >= minNumSamples);
 
     Eigen::Vector2d srcMean = Eigen::Vector2d::Zero();
     Eigen::Vector2d dstMean = Eigen::Vector2d::Zero();
@@ -4126,14 +4126,14 @@ vector<Eigen::Vector2d> CTranslationTransformEstimator::Estimate(const vector<Ei
 }
 void CTranslationTransformEstimator::Residuals(const vector<any>& points1_Any, const vector<any>& points2_Any, const any& translation_Any, vector<double>& residuals)
 {
-    CHECK(points1_Any.size() == points2_Any.size() && !points1_Any.empty());
-    CHECK(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d) && translation_Any.type() == typeid(Eigen::Vector2d));
+    Check(points1_Any.size() == points2_Any.size() && !points1_Any.empty());
+    Check(points1_Any[0].type() == typeid(Eigen::Vector2d) && points2_Any[0].type() == typeid(Eigen::Vector2d) && translation_Any.type() == typeid(Eigen::Vector2d));
 
     Residuals(AnyVec2TypeVec<Eigen::Vector2d>(points1_Any), AnyVec2TypeVec<Eigen::Vector2d>(points2_Any), any_cast<Eigen::Vector2d>(translation_Any), residuals);
 }
 void CTranslationTransformEstimator::Residuals(const vector<Eigen::Vector2d>& points1, const vector<Eigen::Vector2d>& points2, const Eigen::Vector2d& translation, vector<double>& residuals) const
 {
-    CHECK(points1.size() == points2.size() && !points1.empty());
+    Check(points1.size() == points2.size() && !points1.empty());
     residuals.resize(points1.size());
 
     for (size_t i = 0; i < points1.size(); i++)
@@ -4145,21 +4145,21 @@ void CTranslationTransformEstimator::Residuals(const vector<Eigen::Vector2d>& po
 
 CTriangulationEstimator::CTriangulationEstimator(double minTriAngle, CTriangulationResidualType residualType) : CEstimator(2)
 {
-    CHECK(minTriAngle >= 0);
+    Check(minTriAngle >= 0);
     this->minTriAngle = minTriAngle;
     this->residualType = residualType;
 }
 vector<any> CTriangulationEstimator::Estimate(const vector<any>& points_Any, const vector<any>& poses_Any)
 {
-    CHECK(points_Any.size() == poses_Any.size());
-    CHECK(points_Any.size() >= minNumSamples);
-    CHECK(points_Any[0].type() == typeid(CTriangulationPoint) && poses_Any[0].type() == typeid(CTriangulationPose));
+    Check(points_Any.size() == poses_Any.size());
+    Check(points_Any.size() >= minNumSamples);
+    Check(points_Any[0].type() == typeid(CTriangulationPoint) && poses_Any[0].type() == typeid(CTriangulationPose));
     return TypeVec2AnyVec(Estimate(AnyVec2TypeVec<CTriangulationPoint>(points_Any), AnyVec2TypeVec<CTriangulationPose>(poses_Any)));
 }
 vector<Eigen::Vector3d> CTriangulationEstimator::Estimate(const vector<CTriangulationPoint>& points, const vector<CTriangulationPose>& poses) const
 {
-    CHECK(points.size() == poses.size());
-    CHECK(points.size() >= minNumSamples);
+    Check(points.size() == poses.size());
+    Check(points.size() >= minNumSamples);
 
     if (points.size() == 2)
     {
@@ -4211,21 +4211,21 @@ vector<Eigen::Vector3d> CTriangulationEstimator::Estimate(const vector<CTriangul
 }
 void CTriangulationEstimator::Residuals(const vector<any>& points_Any, const vector<any>& poses_Any, const any& XYZ_Any, vector<double>& residuals)
 {
-    CHECK(points_Any.size() == poses_Any.size() && !points_Any.empty());
-    CHECK(points_Any[0].type() == typeid(CTriangulationPoint) && poses_Any[0].type() == typeid(CTriangulationPose) && XYZ_Any.type() == typeid(Eigen::Vector3d));
+    Check(points_Any.size() == poses_Any.size() && !points_Any.empty());
+    Check(points_Any[0].type() == typeid(CTriangulationPoint) && poses_Any[0].type() == typeid(CTriangulationPose) && XYZ_Any.type() == typeid(Eigen::Vector3d));
 
     Residuals(AnyVec2TypeVec<CTriangulationPoint>(points_Any), AnyVec2TypeVec<CTriangulationPose>(poses_Any), any_cast<Eigen::Vector3d>(XYZ_Any), residuals);
 }
 void CTriangulationEstimator::Residuals(const vector<CTriangulationPoint>& points, const vector<CTriangulationPose>& poses, const Eigen::Vector3d& XYZ, vector<double>& residuals) const
 {
-    CHECK(points.size() == poses.size() && !points.empty());
+    Check(points.size() == poses.size() && !points.empty());
     residuals.resize(points.size());
 
     if (residualType == CTriangulationResidualType::CReprojectionError)
     {
         for (size_t i = 0; i < points.size(); i++)
         {
-            CHECK(poses[i].camera);
+            Check(poses[i].camera);
             residuals[i] = CalculateSquaredReprojectionError(points[i].point, XYZ, poses[i].projectionMatrix, *poses[i].camera);
         }
     }
@@ -4239,7 +4239,7 @@ void CTriangulationEstimator::Residuals(const vector<CTriangulationPoint>& point
     }
     else
     {
-        CHECK(false, "Unknown residualType");
+        Check(false, "Unknown residualType");
     }
 }
 

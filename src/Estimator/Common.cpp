@@ -4,7 +4,7 @@ using namespace std;
 
 void CenterAndNormalizeImagePoints(const vector<Eigen::Vector2d>& points, vector<Eigen::Vector2d>& normedPoints, Eigen::Matrix3d& originToResult)
 {
-    CHECK(!points.empty());
+    Check(!points.empty());
 
     const size_t numPoints = points.size();
 
@@ -37,7 +37,7 @@ void CenterAndNormalizeImagePoints(const vector<Eigen::Vector2d>& points, vector
 }
 void ComputeSquaredSampsonError(const vector<Eigen::Vector2d>& points1, const vector<Eigen::Vector2d>& points2, const Eigen::Matrix3d& E, vector<double>& residuals)
 {
-    CHECK(points1.size() == points2.size());
+    Check(points1.size() == points2.size());
     
     // Step 1. 初始化
     const size_t numPoints = points1.size(); // 对应点的数量
@@ -55,7 +55,7 @@ void ComputeSquaredSampsonError(const vector<Eigen::Vector2d>& points1, const ve
 }
 void ComputeSquaredReprojectionError(const vector<Eigen::Vector2d>& points2D, const vector<Eigen::Vector3d>& points3D, const Eigen::Matrix3x4d& worldToCamera, vector<double>& residuals)
 {
-    CHECK(points2D.size() == points3D.size());
+    Check(points2D.size() == points3D.size());
 
     // Step 1. 初始化
     const size_t numPoints = points2D.size();

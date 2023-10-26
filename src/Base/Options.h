@@ -13,8 +13,8 @@
 #include <any>
 #include <Windows.h>
 #include <math.h>
-#include "Math.h"
-#include "Base.h"
+
+#include <ceres/ceres.h>
 
 #include <boost/stacktrace.hpp>
 #include <boost/format.hpp>
@@ -22,10 +22,14 @@
 #include <boost/filesystem.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
 
+#include "Math.h"
+#include "Base.h"
+
+
 struct CBaseOptions
 {
 	std::string imageDir = "";
-	virtual void Check() const = 0;
+	virtual void CheckOptions() const = 0;
 };
 
 // SIFT描述子的归一化方式
@@ -77,12 +81,12 @@ struct CSIFTExtractionOptions final : public CBaseOptions
 
 	CSIFTNormalizationType normalizationType = CSIFTNormalizationType::L1_ROOT; // SIFT描述子的归一化方式
 
-	inline void Check() const override
+	inline void CheckOptions() const override
 	{
-		CHECK(peakThreshold > 0);
-		CHECK(edgeThreshold > 0);
-		CHECK(dspMinScale > 0);
-		CHECK(dspMaxScale >= dspMinScale);
+		Check(peakThreshold > 0);
+		Check(edgeThreshold > 0);
+		Check(dspMinScale > 0);
+		Check(dspMaxScale >= dspMinScale);
 	}
 };
 
@@ -135,14 +139,14 @@ struct CSIFTMatchingOptions final : public CBaseOptions
 	// 是否使用FLANN算法加速匹配
 	bool isUseFLANN = true;
 
-	inline void Check() const override
+	inline void CheckOptions() const override
 	{
-		CHECK(maxRatio > 0);
-		CHECK(maxDistance > 0);
-		CHECK(maxError > 0);
-		CHECK(maxNumTrials > 0);
-		CHECK(maxNumTrials >= minNumTrials);
-		CHECK(minInlierRatio >= 0 && minInlierRatio <= 1);
+		Check(maxRatio > 0);
+		Check(maxDistance > 0);
+		Check(maxError > 0);
+		Check(maxNumTrials > 0);
+		Check(maxNumTrials >= minNumTrials);
+		Check(minInlierRatio >= 0 && minInlierRatio <= 1);
 	}
 };
 
@@ -165,12 +169,12 @@ struct CRANSACOptions final : public CBaseOptions
 	size_t minNumTrials = 100;
 	size_t maxNumTrials = 10000;
 
-	inline void Check() const override
+	inline void CheckOptions() const override
 	{
-		CHECK(maxError > 0);
-		CHECK(minInlierRatio >= 0 && minInlierRatio <= 1);
-		CHECK(confidence >= 0 && confidence <= 1);
-		CHECK(minNumTrials <= maxNumTrials);
+		Check(maxError > 0);
+		Check(minInlierRatio >= 0 && minInlierRatio <= 1);
+		Check(confidence >= 0 && confidence <= 1);
+		Check(minNumTrials <= maxNumTrials);
 	}
 };
 
@@ -207,14 +211,14 @@ struct CTwoViewGeometryOptions final :public CBaseOptions
 
 	CRANSACOptions RANSACOptions; // 双视几何估计过程中使用的RANSAC算法的选项参数
 
-	inline void Check() const override
+	inline void CheckOptions() const override
 	{
-		CHECK(minInliersNum >= 0);
-		CHECK(minE_F_InliersRatio >= 0 && minE_F_InliersRatio <= 1);
-		CHECK(maxH_InliersRatio >= 0 && maxH_InliersRatio <= 1);
-		CHECK(watermarkMinInlierRatio >= 0 && watermarkMinInlierRatio <= 1);
-		CHECK(watermarkBorderSize >= 0 && watermarkBorderSize <= 1);
-		RANSACOptions.Check();
+		Check(minInliersNum >= 0);
+		Check(minE_F_InliersRatio >= 0 && minE_F_InliersRatio <= 1);
+		Check(maxH_InliersRatio >= 0 && maxH_InliersRatio <= 1);
+		Check(watermarkMinInlierRatio >= 0 && watermarkMinInlierRatio <= 1);
+		Check(watermarkBorderSize >= 0 && watermarkBorderSize <= 1);
+		RANSACOptions.CheckOptions();
 	}
 };
 
@@ -229,10 +233,10 @@ struct CEstimateTriangulationOptions final :public CBaseOptions
 	double minTriAngle = 1.5 * M_PI / 180.0;
 	CTriangulationResidualType residualType = CTriangulationResidualType::CAngularError;
 	CRANSACOptions ransacOptions;
-	inline void Check() const override
+	inline void CheckOptions() const override
 	{
-		CHECK(minTriAngle >= 0);
-		ransacOptions.Check();
+		Check(minTriAngle >= 0);
+		ransacOptions.CheckOptions();
 	}
 };
 
@@ -249,14 +253,73 @@ struct CReconstructionOptions final :public CBaseOptions
 	double maxFocalLengthRatio = 10;
 	double maxExtraParam = 1;
 
-	inline void Check() const override
+	inline void CheckOptions() const override
 	{
-		CHECK(minNumMatches > 0);
-		CHECK(maxModelOverlap > 0);
-		CHECK(minModelSize > 0);
-		CHECK(numInitialTrials > 0);
+		Check(minNumMatches > 0);
+		Check(maxModelOverlap > 0);
+		Check(minModelSize > 0);
+		Check(numInitialTrials > 0);
 	}
 };
+
+enum class CLossFunctionType
+{
+	CTrivial,  // 非鲁棒的, 对异常值非常敏感
+	CSoft_L1,  // 具有一定程度的鲁棒性
+	CCauchy    // 鲁棒的, 特别适用于存在许多异常值的情况, 但是下降得相对较慢
+};
+// 平差选项参数
+struct CBundleAdjustmentOptions final :public CBaseOptions
+{
+	CLossFunctionType lossFunctionType = CLossFunctionType::CTrivial;
+	double lossFunctionScale = 1;           // 用于CSoft_L1和CCauchy的缩放因子, 用于决定鲁棒化发生时的残差水平
+	bool isRefineFocalLength = true;        // 是否优化焦距
+	bool isRefinePrincipalPoint = false;    // 是否优化主点
+	bool isRefineExtraParams = true;        // 是否优化相机畸变参数
+	bool isRefineExtrinsics = true;         // 是否优化外参
+	size_t minNumResidualsForMultiThreading = 50000;  // 启用多线程做平差的最小残差数
+	ceres::Solver::Options ceresSolverOptions;        // ceres-solver选项
+
+	CBundleAdjustmentOptions()
+	{
+		ceresSolverOptions.function_tolerance = 0;
+		ceresSolverOptions.gradient_tolerance = 0;
+		ceresSolverOptions.parameter_tolerance = 0;
+		ceresSolverOptions.minimizer_progress_to_stdout = true;
+		ceresSolverOptions.max_num_iterations = 100;
+		ceresSolverOptions.max_linear_solver_iterations = 200;
+		ceresSolverOptions.max_num_consecutive_invalid_steps = 10;
+		ceresSolverOptions.max_consecutive_nonmonotonic_steps = 10;
+		ceresSolverOptions.num_threads = -1;
+	}
+
+	// 根据指定的选项创建一个新的损失函数. 调用者负责该损失函数的所有权
+	inline ceres::LossFunction* CreateLossFunction() const
+	{
+		ceres::LossFunction* lossFunction = nullptr;
+		switch (lossFunctionType)
+		{
+		case CLossFunctionType::CTrivial:
+			lossFunction = new ceres::TrivialLoss();
+			break;
+		case CLossFunctionType::CSoft_L1:
+			lossFunction = new ceres::SoftLOneLoss(lossFunctionScale);
+			break;
+		case CLossFunctionType::CCauchy:
+			lossFunction = new ceres::CauchyLoss(lossFunctionScale);
+			break;
+		}
+		Check(lossFunction);
+		return lossFunction;
+	}
+
+	inline void CheckOptions() const override
+	{
+		Check(lossFunctionScale >= 0);
+	}
+};
+
+
 
 
 struct COptions final : public CBaseOptions
@@ -267,15 +330,17 @@ struct COptions final : public CBaseOptions
 	CTwoViewGeometryOptions twoViewGeometryOptions;
 	CEstimateTriangulationOptions estimateTriangulationOptions;
 	CReconstructionOptions reconstructionOptions;
+	CBundleAdjustmentOptions bundleAdjustmentOptions;
 
-	inline void Check() const override
+	inline void CheckOptions() const override
 	{
-		SIFTExtractionOptions.Check();
-		SIFTMatchingOptions.Check();
-		RANSACOptions.Check();
-		twoViewGeometryOptions.Check();
-		estimateTriangulationOptions.Check();
-		reconstructionOptions.Check();
+		SIFTExtractionOptions.CheckOptions();
+		SIFTMatchingOptions.CheckOptions();
+		RANSACOptions.CheckOptions();
+		twoViewGeometryOptions.CheckOptions();
+		estimateTriangulationOptions.CheckOptions();
+		reconstructionOptions.CheckOptions();
+		bundleAdjustmentOptions.CheckOptions();
 	}
 };
 

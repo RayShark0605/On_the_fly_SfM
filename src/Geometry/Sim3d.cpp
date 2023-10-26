@@ -25,7 +25,7 @@ CSim3D CSim3D::Inverse() const
 void CSim3D::SaveToFile(const string path) const
 {
 	ofstream ofs(path, ios::trunc);
-	CHECK(ofs.good());
+	Check(ofs.good());
 	ofs.precision(17);
 	ofs << scale << " " << rotation.w() << " " << rotation.x() << " "
 		<< rotation.y() << " " << rotation.z() << " " << translation.x() << " "
@@ -34,7 +34,7 @@ void CSim3D::SaveToFile(const string path) const
 void CSim3D::ReadFromFile(const string path)
 {
 	ifstream ifs(path);
-	CHECK(ifs.good());
+	Check(ifs.good());
 	ifs >> scale >> rotation.w() >> rotation.x() >> rotation.y() >> rotation.z() >> translation(0) >> translation(1) >> translation(2);
 }
 Eigen::Matrix3x4d CSim3D::ToMatrix() const noexcept
@@ -52,7 +52,7 @@ bool CSim3D::Estimate(const vector<Eigen::Vector3d>& srcPoints, const vector<Eig
 	{
 		return false;
 	}
-	CHECK(result.size() == 1);
+	Check(result.size() == 1);
 	scale = result[0].col(0).norm();
 	rotation = Eigen::Quaterniond(result[0].leftCols<3>() / scale).normalized();
 	translation = result[0].rightCols<1>();

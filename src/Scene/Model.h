@@ -34,8 +34,8 @@ public:
 		{
 			return false;
 		}
-		CHECK(database && database->IsImageExists(imageID));
-		CHECK(database->GetImage(imageID).IsRegistered(modelID));
+		Check(database && database->IsImageExists(imageID));
+		Check(database->GetImage(imageID).IsRegistered(modelID));
 		return true;
 	}
 	inline size_t GetRegImagesNum() const noexcept
@@ -51,13 +51,13 @@ public:
 	inline const CPoint3D& GetPoint3D(size_t point3DID) const
 	{
 		auto it = points3D.find(point3DID);
-		CHECK(it != points3D.end());
+		Check(it != points3D.end());
 		return it->second;
 	}
 	inline CPoint3D& GetPoint3D(size_t point3DID)
 	{
 		auto it = points3D.find(point3DID);
-		CHECK(it != points3D.end());
+		Check(it != points3D.end());
 		return it->second;
 	}
 	inline bool IsExistsPoint3D(size_t point3DID) const
@@ -77,13 +77,13 @@ public:
 	inline const CImagePairStatus& GetImagePairStatus(const std::pair<size_t, size_t>& imagePair) const
 	{
 		const auto it = imagePairs.find(imagePair);
-		CHECK(it != imagePairs.end());
+		Check(it != imagePairs.end());
 		return it->second;
 	}
 	inline CImagePairStatus& GetImagePairStatus(const std::pair<size_t, size_t>& imagePair)
 	{
 		const auto it = imagePairs.find(imagePair);
-		CHECK(it != imagePairs.end());
+		Check(it != imagePairs.end());
 		return it->second;
 	}
 	inline const CImagePairsType& GetAllImagePairs() const

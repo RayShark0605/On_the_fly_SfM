@@ -56,7 +56,7 @@ bool CWorkflow::ReadImage(const string& imagePath, CDatabase& database)
 		camera.SetPrincipalPointX(imageTemp.cols / 2.0);
 		camera.SetPrincipalPointY(imageTemp.rows / 2.0);
 	}
-	CHECK(camera.VerifyParamsNum());
+	Check(camera.VerifyParamsNum());
 
 	size_t cameraID = numeric_limits<size_t>::max();
 	if (!database.IsCameraExists(camera))
@@ -106,7 +106,7 @@ bool CWorkflow::SIFTExtract(const string& imagePath, const CSIFTExtractionOption
 		return false;
 	}
 	size_t numKeypoints = keypoints.size();
-	CHECK(numKeypoints == descriptors.rows() && descriptors.cols() == 128);
+	Check(numKeypoints == descriptors.rows() && descriptors.cols() == 128);
 
 	auto startWait = chrono::high_resolution_clock::now();
 	while (!database.IsImageExists(imageName))
@@ -139,7 +139,7 @@ bool CWorkflow::SIFTMatch(CDatabase& database, size_t imageID1, size_t imageID2,
 	}
 	const CSIFTDescriptors& descriptors1 = database.GetImageDescriptors(imageID1);
 	const CSIFTDescriptors& descriptors2 = database.GetImageDescriptors(imageID2);
-	CHECK(descriptors1.cols() == 128 && descriptors2.cols() == 128);
+	Check(descriptors1.cols() == 128 && descriptors2.cols() == 128);
 
 	CSIFTMatches matches;
 	if (options.isUseGPU)

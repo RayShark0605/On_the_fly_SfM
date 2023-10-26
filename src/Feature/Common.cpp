@@ -31,7 +31,7 @@ CSIFTDescriptors SIFTDescriptorsFloatToUnsignedChar(const CSIFTDescriptors_Float
 		for (Eigen::MatrixXf::Index c = 0; c < descriptors.cols(); c++)
 		{
 			float originValue = descriptors(r, c);
-			CHECK(originValue >= 0 && originValue <= 0.5);
+			Check(originValue >= 0 && originValue <= 0.5);
 			const float scaledValue = round(512.0f * originValue);
 			results(r, c) = TruncateCast<float, uint8_t>(scaledValue);
 		}
@@ -40,8 +40,8 @@ CSIFTDescriptors SIFTDescriptorsFloatToUnsignedChar(const CSIFTDescriptors_Float
 }
 void ExtractTopScaleFeatures(CKeypoints& keypoints, CSIFTDescriptors& descriptors, size_t numFeatures)
 {
-	CHECK(keypoints.size() == descriptors.rows());
-	CHECK(numFeatures > 0);
+	Check(keypoints.size() == descriptors.rows());
+	Check(numFeatures > 0);
 
 	if (descriptors.rows() <= numFeatures)
 	{
@@ -90,9 +90,9 @@ CSIFTDescriptors VLFeatToOriginFormat(const CSIFTDescriptors& vlfeatDescriptors)
 }
 vector<uchar> ReadImage(const string& imagePath, size_t maxSize, size_t& originWidth, size_t& originHeight, size_t& currentWidth, size_t& currentHeight)
 {
-	CHECK(IsFileExists(imagePath));
+	Check(IsFileExists(imagePath));
 	cv::Mat image = cv::imread(imagePath, cv::IMREAD_GRAYSCALE);
-	CHECK(!image.empty());
+	Check(!image.empty());
 
 	originWidth = image.cols;
 	originHeight = image.rows;
@@ -136,8 +136,8 @@ void ScaleKeypoints(CKeypoints& keypoints, size_t currentWidth, size_t currentHe
 }
 Eigen::MatrixXi ComputeSIFTDistanceMatrix(const CSIFTDescriptors& descriptors1, const CSIFTDescriptors& descriptors2)
 {
-	CHECK(descriptors1.cols() == 128 && descriptors2.cols() == 128);
-	CHECK(descriptors1.rows() != 0 && descriptors2.rows() != 0);
+	Check(descriptors1.cols() == 128 && descriptors2.cols() == 128);
+	Check(descriptors1.rows() != 0 && descriptors2.rows() != 0);
 	int m = descriptors1.rows(), n = descriptors2.rows();
 
 	Eigen::MatrixXi distances(m, n);
@@ -153,8 +153,8 @@ Eigen::MatrixXi ComputeSIFTDistanceMatrix(const CSIFTDescriptors& descriptors1, 
 }
 Eigen::MatrixXi ComputeSIFTDistanceMatrix(const CKeypoints& keypoints1, const CKeypoints& keypoints2, const CSIFTDescriptors& descriptors1, const CSIFTDescriptors& descriptors2, const function<bool(float, float, float, float)>& guidedFilter)
 {
-	CHECK(guidedFilter != nullptr);
-	CHECK(keypoints1.size() == descriptors1.rows() && keypoints2.size() == descriptors2.rows());
+	Check(guidedFilter != nullptr);
+	Check(keypoints1.size() == descriptors1.rows() && keypoints2.size() == descriptors2.rows());
 	int m = descriptors1.rows(), n = descriptors2.rows();
 	Eigen::MatrixXi distances(m, n);
 #pragma omp parallel for

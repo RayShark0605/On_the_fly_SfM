@@ -48,7 +48,7 @@ bool CCamera::IsUndistorted() const
 	vector<size_t> extraParamsIndex = GetExtraParamsIndex();
 	for (const size_t index : extraParamsIndex)
 	{
-		CHECK(index < params.size());
+		Check(index < params.size());
 		if (abs(params[index] > 1e-8))
 		{
 			return false;

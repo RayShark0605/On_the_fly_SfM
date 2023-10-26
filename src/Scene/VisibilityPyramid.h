@@ -30,7 +30,7 @@ public:
 	}
 	void SetPoint(double x, double y)
 	{
-		CHECK(pyramid.size() > 0);
+		Check(pyramid.size() > 0);
 		size_t cx = 0;
 		size_t cy = 0;
 		CellForPoint(x, y, &cx, &cy);
@@ -45,11 +45,11 @@ public:
 			cx = cx >> 1;
 			cy = cy >> 1;
 		}
-		CHECK(score <= maxScore);
+		Check(score <= maxScore);
 	}
 	void ResetPoint(double x, double y)
 	{
-		CHECK(pyramid.size() > 0);
+		Check(pyramid.size() > 0);
 		size_t cx = 0;
 		size_t cy = 0;
 		CellForPoint(x, y, &cx, &cy);
@@ -64,7 +64,7 @@ public:
 			cx = cx >> 1;
 			cy = cy >> 1;
 		}
-		CHECK(score <= maxScore);
+		Check(score <= maxScore);
 	}
 
 	inline size_t NumLevels() const noexcept
@@ -164,7 +164,7 @@ private:
 
 	void CellForPoint(double x, double y, size_t* cx, size_t* cy) const noexcept
 	{
-		CHECK(width > 0 && height > 0);
+		Check(width > 0 && height > 0);
 		const size_t maxDim = 1 << pyramid.size();
 		*cx = Clamp<size_t>(maxDim * x / width, 0, maxDim - 1);
 		*cy = Clamp<size_t>(maxDim * y / height, 0, maxDim - 1);

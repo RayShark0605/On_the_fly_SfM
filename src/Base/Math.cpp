@@ -44,7 +44,7 @@ Eigen::VectorXd RemoveTrailingZeros(const Eigen::VectorXd& coeffs)
 }
 bool FindLinearPolynomialRoots(const Eigen::VectorXd& coeffs, Eigen::VectorXd& real, Eigen::VectorXd& imag)
 {
-	CHECK(coeffs.size() == 2);
+	Check(coeffs.size() == 2);
 	if (coeffs(0) == 0)
 	{
 		return false;
@@ -58,7 +58,7 @@ bool FindLinearPolynomialRoots(const Eigen::VectorXd& coeffs, Eigen::VectorXd& r
 }
 bool FindQuadraticPolynomialRoots(const Eigen::VectorXd& coeffs, Eigen::VectorXd& real, Eigen::VectorXd& imag)
 {
-	CHECK(coeffs.size() == 3);
+	Check(coeffs.size() == 3);
 	const double a = coeffs(0);
 	if (a == 0)
 	{
@@ -107,7 +107,7 @@ bool FindQuadraticPolynomialRoots(const Eigen::VectorXd& coeffs, Eigen::VectorXd
 }
 bool FindPolynomialRootsDurandKerner(const Eigen::VectorXd& coeffsAll, Eigen::VectorXd& real, Eigen::VectorXd& imag)
 {
-	CHECK(coeffsAll.size() >= 2);
+	Check(coeffsAll.size() >= 2);
 
 	// Step 1. 输入检查和预处理, 去除前导零, 确定多项式的度
 	const Eigen::VectorXd coeffs = RemoveLeadingZeros(coeffsAll);
@@ -176,7 +176,7 @@ bool FindPolynomialRootsDurandKerner(const Eigen::VectorXd& coeffsAll, Eigen::Ve
 }
 bool FindPolynomialRootsCompanionMatrix(const Eigen::VectorXd& coeffsAll, Eigen::VectorXd& real, Eigen::VectorXd& imag)
 {
-	CHECK(coeffsAll.size() >= 2);
+	Check(coeffsAll.size() >= 2);
 
 	// Step 1. 输入检查和预处理, 去除前导零, 确定多项式的度
 	Eigen::VectorXd coeffs = RemoveLeadingZeros(coeffsAll);

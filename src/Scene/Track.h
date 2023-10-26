@@ -42,17 +42,17 @@ public:
 	
 	inline const CTrackElement& GetElement(size_t index) const
 	{
-		CHECK(index < elements.size());
+		Check(index < elements.size());
 		return elements[index];
 	}
 	inline CTrackElement& GetElement(size_t index)
 	{
-		CHECK(index < elements.size());
+		Check(index < elements.size());
 		return elements[index];
 	}
 	inline void SetElement(size_t index, const CTrackElement& element)
 	{
-		CHECK(index < elements.size());
+		Check(index < elements.size());
 		elements[index] = element;
 	}
 
@@ -71,7 +71,7 @@ public:
 
 	inline void DeleteElement(size_t index)
 	{
-		CHECK(index < elements.size());
+		Check(index < elements.size());
 
 		if (index < elements.size() - 1)
 		{

@@ -24,7 +24,7 @@ using namespace std;
 
 // 这里之所以把Base.h中的CHECK单独复制过来而不直接include "Base.h", 是因为Base.h中include了tbb库, 而某些版本的Qt与tbb一起编译会出现编译时错误
 // 参考: https://stackoverflow.com/questions/65950518/linking-intel-tbb-with-qt-compiler-msvc
-#define CHECK(condition, ...) CheckFunc((condition), (__FILE__), (__LINE__), __VA_ARGS__)
+#define Check(condition, ...) CheckFunc((condition), (__FILE__), (__LINE__), __VA_ARGS__)
 inline void CheckFunc(bool condition, const char* file, int line, string info = "Check failed!")
 {
 	if (!condition)
@@ -74,8 +74,8 @@ COpenGLContextManager::COpenGLContextManager(int openglVersion_Magor, int opengl
 	currentThread = nullptr;
 	makeCurrentAction = new QAction(this);
 
-	CHECK(QCoreApplication::instance());
-	CHECK(QCoreApplication::instance()->thread() == QThread::currentThread());
+	Check(QCoreApplication::instance());
+	Check(QCoreApplication::instance()->thread() == QThread::currentThread());
 
 	QSurfaceFormat format;
 	format.setDepthBufferSize(24);
@@ -86,12 +86,12 @@ COpenGLContextManager::COpenGLContextManager(int openglVersion_Magor, int opengl
 	context.setFormat(format);
 
 	surface.create();
-	CHECK(context.create());
+	Check(context.create());
 	context.makeCurrent(&surface);
-	CHECK(context.isValid());
+	Check(context.isValid());
 
 	connect(makeCurrentAction, &QAction::triggered, this, [this]() {
-		CHECK(currentThread);
+		Check(currentThread);
 		context.doneCurrent();
 		context.moveToThread(currentThread);
 		}, Qt::BlockingQueuedConnection);

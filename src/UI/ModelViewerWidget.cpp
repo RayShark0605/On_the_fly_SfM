@@ -71,8 +71,8 @@ void BuildImageModel(const CImage& image, size_t modelID, const CCamera& camera,
 
 CModelViewerWidget::CModelViewerWidget(QWidget* parent, COptions* options, CDatabase* database) : QOpenGLWidget(parent), options(options), database(database)
 {
-	CHECK(options && database);
-	options->Check();
+	Check(options && database);
+	options->CheckOptions();
 	isMousePressed = false;
 	focusDistance = 100;
 	selectedImageID = numeric_limits<size_t>::max();
@@ -123,7 +123,7 @@ CModelViewerWidget::CModelViewerWidget(QWidget* parent, COptions* options, CData
 }
 void CModelViewerWidget::ShowImage(size_t imageID, size_t modelID, const Eigen::Vector4f& planeColor, const Eigen::Vector4f& frameColor)
 {
-	CHECK(database && database->IsImageExists(imageID));
+	Check(database && database->IsImageExists(imageID));
 	makeCurrent();
 	vector<CLinePainterData> lineData;
 	vector<CTrianglePainterData> tringleData;
@@ -132,7 +132,7 @@ void CModelViewerWidget::ShowImage(size_t imageID, size_t modelID, const Eigen::
 	
 	const CImage& image = database->GetImage(imageID);
 	const size_t cameraID = image.GetCameraID();
-	CHECK(database->IsCameraExists(cameraID));
+	Check(database->IsCameraExists(cameraID));
 	const CCamera& camera = database->GetCamera(cameraID);
 
 	BuildImageModel(image, modelID, camera, imageSize, planeColor, frameColor, tringleData, lineData);
@@ -151,7 +151,7 @@ void CModelViewerWidget::ShowImages(const std::vector<size_t>& imageIDs, size_t 
 	{
 		const CImage& image = database->GetImage(imageIDs[i]);
 		const size_t cameraID = image.GetCameraID();
-		CHECK(database->IsCameraExists(cameraID));
+		Check(database->IsCameraExists(cameraID));
 		const CCamera& camera = database->GetCamera(cameraID);
 
 		BuildImageModel(image, modelID, camera, imageSize, planeColor, frameColor, tringleData, lineData);

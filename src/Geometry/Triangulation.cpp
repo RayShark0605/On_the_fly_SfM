@@ -31,7 +31,7 @@ Eigen::Vector3d TriangulateOptimalPoint(const Eigen::Matrix3x4d& worldToCamera1,
 }
 Eigen::Vector3d TriangulateMultiViewPoint(const vector<Eigen::Matrix3x4d>& worldToCameras, const vector<Eigen::Vector2d>& points2D)
 {
-	CHECK(worldToCameras.size() == points2D.size());
+	Check(worldToCameras.size() == points2D.size());
 
 	// Step 1. 初始化4×4的矩阵A, 它将用于累积所有视图的信息
 	Eigen::Matrix4d A = Eigen::Matrix4d::Zero();
@@ -57,7 +57,7 @@ Eigen::Vector3d TriangulateMultiViewPoint(const vector<Eigen::Matrix3x4d>& world
 }
 vector<Eigen::Vector3d> TriangulatePoints(const Eigen::Matrix3x4d& worldToCamera1, const Eigen::Matrix3x4d& worldToCamera2, const vector<Eigen::Vector2d>& points1, const vector<Eigen::Vector2d>& points2)
 {
-	CHECK(points1.size() == points2.size());
+	Check(points1.size() == points2.size());
 	vector<Eigen::Vector3d> points3D(points1.size());
 	for (size_t i = 0; i < points3D.size(); i++) 
 	{
@@ -67,7 +67,7 @@ vector<Eigen::Vector3d> TriangulatePoints(const Eigen::Matrix3x4d& worldToCamera
 }
 vector<Eigen::Vector3d> TriangulateOptimalPoints(const Eigen::Matrix3x4d& worldToCamera1, const Eigen::Matrix3x4d& worldToCamera2, const vector<Eigen::Vector2d>& points1, const vector<Eigen::Vector2d>& points2)
 {
-	CHECK(points1.size() == points2.size());
+	Check(points1.size() == points2.size());
 	vector<Eigen::Vector3d> points3D(points1.size());
 	for (size_t i = 0; i < points3D.size(); i++)
 	{
@@ -117,8 +117,8 @@ vector<double> CalculateTriangulationAngles(const Eigen::Vector3d& projectionCen
 }
 bool EstimateTriangulation(const CEstimateTriangulationOptions& options, const vector<CTriangulationPoint>& points, const vector<CTriangulationPose>& poses, vector<char>& inlierMask, Eigen::Vector3d& XYZ)
 {
-	CHECK(points.size() >= 2 && points.size() == poses.size());
-	options.Check();
+	Check(points.size() >= 2 && points.size() == poses.size());
+	options.CheckOptions();
 
 	CTriangulationEstimator triangulationEstimator(options.minTriAngle, options.residualType);
 	CTriangulationEstimator triangulationEstimator_Local(options.minTriAngle, options.residualType);

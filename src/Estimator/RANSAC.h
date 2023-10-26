@@ -47,8 +47,8 @@ public:
 	CRANSACReport<ModelType> Estimate(const std::vector<XType>& X, const std::vector<YType>& Y)
 	{
 		// Step 1. 初始化. 检查输入向量大小, 初始化结果, 检查特殊情况
-		CHECK(X.size() == Y.size());
-		CHECK(estimator && supportMeasurer && sampler);
+		Check(X.size() == Y.size());
+		Check(estimator && supportMeasurer && sampler);
 
 		const size_t numSamples = X.size();
 		CRANSACReport<ModelType> report;
@@ -85,7 +85,7 @@ public:
 			for (const ModelType& sampledModel : sampledModels)
 			{
 				estimator->Residuals(TypeVec2AnyVec(X), TypeVec2AnyVec(Y), sampledModel, residuals); // 对于每一个估计出的模型, 计算其与所有数据点的残差
-				CHECK(residuals.size() == numSamples);
+				Check(residuals.size() == numSamples);
 
 				const CSupport support = supportMeasurer->Evaluate(residuals, maxResidual); // 评估这个模型的支持度
 				if (supportMeasurer->Compare(support, bestSupport)) // 如果新的支持度比当前最好的支持度更好, 就更新最好的支持度和最好的模型
@@ -114,7 +114,7 @@ public:
 			return report;
 		}
 		estimator->Residuals(TypeVec2AnyVec(X), TypeVec2AnyVec(Y), report.model, residuals);
-		CHECK(residuals.size() == numSamples);
+		Check(residuals.size() == numSamples);
 
 		report.inlierMask.resize(numSamples);
 		for (size_t i = 0; i < residuals.size(); i++) // 判断每个样本是否为内点
@@ -154,8 +154,8 @@ public:
 	CRANSACReport<ModelType> Estimate(const std::vector<XType>& X, const std::vector<YType>& Y)
 	{
 		// Step 1. 初始化. 检查输入向量大小, 初始化结果, 检查特殊情况
-		CHECK(X.size() == Y.size());
-		CHECK(estimator && localEstimator && supportMeasurer && sampler);
+		Check(X.size() == Y.size());
+		Check(estimator && localEstimator && supportMeasurer && sampler);
 
 		const size_t numSamples = X.size();
 		CRANSACReport<ModelType> report;
@@ -195,7 +195,7 @@ public:
 			for (const ModelType& sampledModel : sampledModels)
 			{
 				estimator->Residuals(TypeVec2AnyVec(X), TypeVec2AnyVec(Y), sampledModel, residuals); // 对于每一个估计出的模型, 计算其与所有数据点的残差
-				CHECK(residuals.size() == numSamples);
+				Check(residuals.size() == numSamples);
 
 				const CSupport support = supportMeasurer->Evaluate(residuals, maxResidual); // 评估这个模型的支持度
 
@@ -229,7 +229,7 @@ public:
 							for (const ModelType& localModel : localModels)
 							{
 								localEstimator->Residuals(TypeVec2AnyVec(X), TypeVec2AnyVec(Y), localModel, residuals);
-								CHECK(residuals.size() == numSamples);
+								Check(residuals.size() == numSamples);
 								const CSupport localSupport = supportMeasurer->Evaluate(residuals, maxResidual);
 
 								// 检查局部优化模型是否更优
@@ -278,7 +278,7 @@ public:
 		{
 			estimator->Residuals(TypeVec2AnyVec(X), TypeVec2AnyVec(Y), report.model, residuals);
 		}
-		CHECK(residuals.size() == numSamples);
+		Check(residuals.size() == numSamples);
 		report.inlierMask.resize(numSamples);
 
 		for (size_t i = 0; i < residuals.size(); i++) // 判断每个样本是否为内点

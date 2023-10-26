@@ -51,7 +51,7 @@ size_t CRAMDatabase::GetCameraID(const CCamera& camera) const
 			return pair.first;
 		}
 	}
-	CHECK(false, "This camera does not exist!");
+	Check(false, "This camera does not exist!");
 }
 const CCamera& CRAMDatabase::GetCamera(size_t cameraID) const
 {
@@ -60,7 +60,7 @@ const CCamera& CRAMDatabase::GetCamera(size_t cameraID) const
 	{
 		return it->second;
 	}
-	CHECK(false, (boost::format("This camera does not exist! cameraID = %1%") % cameraID).str());
+	Check(false, (boost::format("This camera does not exist! cameraID = %1%") % cameraID).str());
 }
 CCamera& CRAMDatabase::GetCamera(size_t cameraID)
 {
@@ -69,7 +69,7 @@ CCamera& CRAMDatabase::GetCamera(size_t cameraID)
 	{
 		return it->second;
 	}
-	CHECK(false, (boost::format("This camera does not exist! cameraID = %1%") % cameraID).str());
+	Check(false, (boost::format("This camera does not exist! cameraID = %1%") % cameraID).str());
 }
 vector<CCamera> CRAMDatabase::GetAllCameras() const
 {
@@ -141,9 +141,9 @@ const CCamera& CRAMDatabase::GetImageCamera(size_t imageID) const
 		{
 			return findCamera->second;
 		}
-		CHECK(false, (boost::format("This camera does not exist! cameraID = %1%") % cameraID).str());
+		Check(false, (boost::format("This camera does not exist! cameraID = %1%") % cameraID).str());
 	}
-	CHECK(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
+	Check(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
 }
 const CImage& CRAMDatabase::GetImage(size_t imageID) const
 {
@@ -152,7 +152,7 @@ const CImage& CRAMDatabase::GetImage(size_t imageID) const
 	{
 		return it->second;
 	}
-	CHECK(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
+	Check(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
 }
 CImage& CRAMDatabase::GetImage(size_t imageID)
 {
@@ -161,7 +161,7 @@ CImage& CRAMDatabase::GetImage(size_t imageID)
 	{
 		return it->second;
 	}
-	CHECK(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
+	Check(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
 }
 vector<CImage> CRAMDatabase::GetAllImages() const
 {
@@ -190,7 +190,7 @@ size_t CRAMDatabase::AddImage(const CImage& image)
 	images[imageID].SetImageID(imageID);
 
 	const size_t cameraID = images[imageID].GetCameraID();
-	CHECK(cameras.find(cameraID) != cameras.end());
+	Check(cameras.find(cameraID) != cameras.end());
 	images[imageID].Setup(cameras[cameraID]);
 
 	return imageID;
@@ -203,7 +203,7 @@ size_t CRAMDatabase::GetImageKeypointsNum(size_t imageID) const
 	{
 		return it->second.GetNumPoints2D();
 	}
-	CHECK(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
+	Check(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
 }
 const CKeypoints& CRAMDatabase::GetImageKeypoints(size_t imageID) const
 {
@@ -212,7 +212,7 @@ const CKeypoints& CRAMDatabase::GetImageKeypoints(size_t imageID) const
 	{
 		return it->second.GetKeypoints();
 	}
-	CHECK(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
+	Check(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
 }
 CKeypoints& CRAMDatabase::GetImageKeypoints(size_t imageID)
 {
@@ -221,7 +221,7 @@ CKeypoints& CRAMDatabase::GetImageKeypoints(size_t imageID)
 	{
 		return it->second.GetKeypoints();
 	}
-	CHECK(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
+	Check(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
 }
 void CRAMDatabase::AddImageKeypoints(size_t imageID, const CKeypoints& keypoints)
 {
@@ -231,7 +231,7 @@ void CRAMDatabase::AddImageKeypoints(size_t imageID, const CKeypoints& keypoints
 		it->second.SetPoints2D(keypoints);
 		return;
 	}
-	CHECK(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
+	Check(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
 }
 
 size_t CRAMDatabase::GetImageDescriptorsNum(size_t imageID) const
@@ -241,7 +241,7 @@ size_t CRAMDatabase::GetImageDescriptorsNum(size_t imageID) const
 	{
 		return it->second.GetNumDescriptors();
 	}
-	CHECK(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
+	Check(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
 }
 const CSIFTDescriptors& CRAMDatabase::GetImageDescriptors(size_t imageID) const
 {
@@ -250,7 +250,7 @@ const CSIFTDescriptors& CRAMDatabase::GetImageDescriptors(size_t imageID) const
 	{
 		return it->second.GetDescriptors();
 	}
-	CHECK(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
+	Check(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
 }
 CSIFTDescriptors& CRAMDatabase::GetImageDescriptors(size_t imageID)
 {
@@ -259,7 +259,7 @@ CSIFTDescriptors& CRAMDatabase::GetImageDescriptors(size_t imageID)
 	{
 		return it->second.GetDescriptors();
 	}
-	CHECK(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
+	Check(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
 }
 void CRAMDatabase::AddImageDescriptors(size_t imageID, const CSIFTDescriptors& descriptors)
 {
@@ -269,7 +269,7 @@ void CRAMDatabase::AddImageDescriptors(size_t imageID, const CSIFTDescriptors& d
 		it->second.SetDescriptors(descriptors);
 		return;
 	}
-	CHECK(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
+	Check(false, (boost::format("This image does not exist! imageID = %1%") % imageID).str());
 }
 
 size_t CRAMDatabase::GetMatchesNum(size_t imageID1, size_t imageID2) const
@@ -278,9 +278,9 @@ size_t CRAMDatabase::GetMatchesNum(size_t imageID1, size_t imageID2) const
 	{
 		return GetMatchesNum(imageID2, imageID1);
 	}
-	CHECK(images.find(imageID1) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID1).str());
-	CHECK(images.find(imageID2) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID2).str());
-	CHECK(imageID1 != imageID2);
+	Check(images.find(imageID1) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID1).str());
+	Check(images.find(imageID2) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID2).str());
+	Check(imageID1 != imageID2);
 
 	auto findFirst = matches.find(imageID1);
 	if (findFirst != matches.end())
@@ -295,9 +295,9 @@ size_t CRAMDatabase::GetMatchesNum(size_t imageID1, size_t imageID2) const
 }
 const CSIFTMatches& CRAMDatabase::GetMatches(size_t imageID1, size_t imageID2) const
 {
-	CHECK(images.find(imageID1) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID1).str());
-	CHECK(images.find(imageID2) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID2).str());
-	CHECK(imageID1 < imageID2);
+	Check(images.find(imageID1) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID1).str());
+	Check(images.find(imageID2) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID2).str());
+	Check(imageID1 < imageID2);
 
 	auto findFirst = matches.find(imageID1);
 	if (findFirst != matches.end())
@@ -308,13 +308,13 @@ const CSIFTMatches& CRAMDatabase::GetMatches(size_t imageID1, size_t imageID2) c
 			return findSecond->second;
 		}
 	}
-	CHECK(false, (boost::format("No matching relationship can be found between Image %1% and Image %1%!") % imageID1 % imageID2).str());
+	Check(false, (boost::format("No matching relationship can be found between Image %1% and Image %1%!") % imageID1 % imageID2).str());
 }
 CSIFTMatches& CRAMDatabase::GetMatches(size_t imageID1, size_t imageID2)
 {
-	CHECK(imageID1 < imageID2);
-	CHECK(images.find(imageID1) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID1).str());
-	CHECK(images.find(imageID2) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID2).str());
+	Check(imageID1 < imageID2);
+	Check(images.find(imageID1) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID1).str());
+	Check(images.find(imageID2) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID2).str());
 
 	auto findFirst = matches.find(imageID1);
 	if (findFirst != matches.end())
@@ -325,7 +325,7 @@ CSIFTMatches& CRAMDatabase::GetMatches(size_t imageID1, size_t imageID2)
 			return findSecond->second;
 		}
 	}
-	CHECK(false, (boost::format("No matching relationship can be found between Image %1% and Image %1%!") % imageID1 % imageID2).str());
+	Check(false, (boost::format("No matching relationship can be found between Image %1% and Image %1%!") % imageID1 % imageID2).str());
 }
 unordered_map<size_t, unordered_map<size_t, CSIFTMatches>> CRAMDatabase::GetAllMatches() const
 {
@@ -358,9 +358,9 @@ void CRAMDatabase::AddMatches(size_t imageID1, size_t imageID2, const CSIFTMatch
 		}
 		AddMatches(imageID2, imageID1, matchesReversed);
 	}
-	CHECK(images.find(imageID1) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID1).str());
-	CHECK(images.find(imageID2) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID2).str());
-	CHECK(imageID1 != imageID2);
+	Check(images.find(imageID1) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID1).str());
+	Check(images.find(imageID2) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID2).str());
+	Check(imageID1 != imageID2);
 	if (this->matches[imageID1].find(imageID2) != this->matches[imageID1].end())
 	{
 		this->matches[imageID1][imageID2].insert(this->matches[imageID1][imageID2].end(), matches.begin(), matches.end());
@@ -372,7 +372,7 @@ void CRAMDatabase::AddMatches(size_t imageID1, size_t imageID2, const CSIFTMatch
 }
 size_t CRAMDatabase::GetMatchedImagesNum(size_t imageID) const
 {
-	CHECK(images.find(imageID) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID).str());
+	Check(images.find(imageID) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID).str());
 
 	size_t count = 0;
 	for (const auto& pair : matches)
@@ -399,9 +399,9 @@ size_t CRAMDatabase::GetInlierMatchesNum(size_t imageID1, size_t imageID2) const
 	{
 		return GetInlierMatchesNum(imageID2, imageID1);
 	}
-	CHECK(images.find(imageID1) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID1).str());
-	CHECK(images.find(imageID2) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID2).str());
-	CHECK(imageID1 != imageID2);
+	Check(images.find(imageID1) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID1).str());
+	Check(images.find(imageID2) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID2).str());
+	Check(imageID1 != imageID2);
 
 	auto findFirst = twoViewGeometries.find(imageID1);
 	if (findFirst != twoViewGeometries.end())
@@ -416,9 +416,9 @@ size_t CRAMDatabase::GetInlierMatchesNum(size_t imageID1, size_t imageID2) const
 }
 const CTwoViewGeometry& CRAMDatabase::GetTwoViewGeometry(size_t imageID1, size_t imageID2) const
 {
-	CHECK(images.find(imageID1) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID1).str());
-	CHECK(images.find(imageID2) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID2).str());
-	CHECK(imageID1 < imageID2);
+	Check(images.find(imageID1) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID1).str());
+	Check(images.find(imageID2) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID2).str());
+	Check(imageID1 < imageID2);
 
 	auto findFirst = twoViewGeometries.find(imageID1);
 	if (findFirst != twoViewGeometries.end())
@@ -429,13 +429,13 @@ const CTwoViewGeometry& CRAMDatabase::GetTwoViewGeometry(size_t imageID1, size_t
 			return findSecond->second;
 		}
 	}
-	CHECK(false, (boost::format("No two-view geometry can be found between Image %1% and Image %1%!") % imageID1 % imageID2).str());
+	Check(false, (boost::format("No two-view geometry can be found between Image %1% and Image %1%!") % imageID1 % imageID2).str());
 }
 CTwoViewGeometry& CRAMDatabase::GetTwoViewGeometry(size_t imageID1, size_t imageID2)
 {
-	CHECK(images.find(imageID1) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID1).str());
-	CHECK(images.find(imageID2) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID2).str());
-	CHECK(imageID1 < imageID2);
+	Check(images.find(imageID1) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID1).str());
+	Check(images.find(imageID2) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID2).str());
+	Check(imageID1 < imageID2);
 
 	auto findFirst = twoViewGeometries.find(imageID1);
 	if (findFirst != twoViewGeometries.end())
@@ -446,7 +446,7 @@ CTwoViewGeometry& CRAMDatabase::GetTwoViewGeometry(size_t imageID1, size_t image
 			return findSecond->second;
 		}
 	}
-	CHECK(false, (boost::format("No two-view geometry can be found between Image %1% and Image %2%!") % imageID1 % imageID2).str());
+	Check(false, (boost::format("No two-view geometry can be found between Image %1% and Image %2%!") % imageID1 % imageID2).str());
 }
 unordered_map<size_t, unordered_map<size_t, CTwoViewGeometry>> CRAMDatabase::GetAllTwoViewGeometries() const
 {
@@ -466,9 +466,9 @@ unordered_map<size_t, unordered_map<size_t, CTwoViewGeometry>> CRAMDatabase::Get
 }
 void CRAMDatabase::AddTwoViewGeometry(size_t imageID1, size_t imageID2, const CTwoViewGeometry& twoViewGeometry)
 {
-	CHECK(images.find(imageID1) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID1).str());
-	CHECK(images.find(imageID2) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID2).str());
-	CHECK(imageID1 < imageID2);
+	Check(images.find(imageID1) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID1).str());
+	Check(images.find(imageID2) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID2).str());
+	Check(imageID1 < imageID2);
 	this->twoViewGeometries[imageID1][imageID2] = twoViewGeometry;
 	for (const CSIFTMatch& match : twoViewGeometry.inlierMatches)
 	{
@@ -478,7 +478,7 @@ void CRAMDatabase::AddTwoViewGeometry(size_t imageID1, size_t imageID2, const CT
 }
 size_t CRAMDatabase::GetTwoViewGeometryImagesNum(size_t imageID) const
 {
-	CHECK(images.find(imageID) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID).str());
+	Check(images.find(imageID) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID).str());
 	size_t count = 0;
 	for (const auto& pair : twoViewGeometries)
 	{
@@ -507,7 +507,7 @@ unordered_map<pair<size_t, size_t>, size_t, MatchPairHash, MatchPairEqual> CRAMD
 		for (const auto& pair2 : pair.second)
 		{
 			const size_t imageID2 = pair2.first;
-			CHECK(imageID1 < imageID2);
+			Check(imageID1 < imageID2);
 			correspondences[make_pair(imageID1, imageID2)] = pair2.second.inlierMatches.size();
 		}
 	}
@@ -515,11 +515,11 @@ unordered_map<pair<size_t, size_t>, size_t, MatchPairHash, MatchPairEqual> CRAMD
 }
 void CRAMDatabase::SaveAsDir(const string& dirPath) const
 {
-	CHECK(IsDirExists(dirPath));
+	Check(IsDirExists(dirPath));
 	const string outputPath = EnsureTrailingSlash(dirPath);
 
 	ofstream cameraFile(outputPath + "cameras.txt");
-	CHECK(cameraFile.is_open());
+	Check(cameraFile.is_open());
 	cameraFile << "cameras num:" << cameras.size() << endl;
 	cameraFile << "cameraID,width,height,cameraModelName,params,isFocalLengthPrior" << endl;
 	for (const auto& pair : cameras)
@@ -536,7 +536,7 @@ void CRAMDatabase::SaveAsDir(const string& dirPath) const
 	cameraFile.close();
 
 	ofstream imageFile(outputPath + "images.txt");
-	CHECK(imageFile.is_open());
+	Check(imageFile.is_open());
 	imageFile << "images num:" << images.size() << endl;
 	for (const auto& pair : images)
 	{

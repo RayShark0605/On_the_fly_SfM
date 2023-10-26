@@ -40,7 +40,7 @@ bool CCameraModel::IsBogusParams(const vector<double>& params, size_t width, siz
 }
 bool CCameraModel::IsBogusFocalLength(const vector<double>& params, size_t width, size_t height, double minFocalLengthRatio, double maxFocalLengthRatio) const
 {
-	CHECK(focalLengthIndex_X < params.size() && focalLengthIndex_Y < params.size());
+	Check(focalLengthIndex_X < params.size() && focalLengthIndex_Y < params.size());
 	const double invMaxSize = 1.0 / max(width, height);
 	const double invFocalLengthX = params[focalLengthIndex_X] * invMaxSize;
 	const double invFocalLengthY = params[focalLengthIndex_Y] * invMaxSize;
@@ -49,7 +49,7 @@ bool CCameraModel::IsBogusFocalLength(const vector<double>& params, size_t width
 }
 bool CCameraModel::IsBogusPrincipalPoint(const vector<double>& params, size_t width, size_t height) const
 {
-	CHECK(principalPointIndex_X < params.size() && principalPointIndex_Y < params.size());
+	Check(principalPointIndex_X < params.size() && principalPointIndex_Y < params.size());
 	const double cx = params[principalPointIndex_X];
 	const double cy = params[principalPointIndex_Y];
 	return (cx < 0 || cx > width || cy < 0 || cy > height);
@@ -58,7 +58,7 @@ bool CCameraModel::IsBogusExtraParams(const vector<double>& params, double maxEx
 {
 	for (const size_t index : extraParamsIndex)
 	{
-		CHECK(index < params.size());
+		Check(index < params.size());
 		if (abs(params[index]) > maxExtraParam)
 		{
 			return true;
@@ -68,7 +68,7 @@ bool CCameraModel::IsBogusExtraParams(const vector<double>& params, double maxEx
 }
 double CCameraModel::ImageToCameraThreshold(const vector<double>& params, double threshold) const
 {
-	CHECK(focalLengthIndex_X < params.size() && focalLengthIndex_Y < params.size());
+	Check(focalLengthIndex_X < params.size() && focalLengthIndex_Y < params.size());
 	double meanFocalLength = params[focalLengthIndex_X] / 2.0 + params[focalLengthIndex_Y] / 2.0;
 	return threshold / meanFocalLength;
 }
@@ -127,10 +127,10 @@ vector<double> CSimpleRadialCameraModel::InitializeParams(double focalLength, si
 }
 void CSimpleRadialCameraModel::CameraToImage(const vector<double>& params, float u, float v, float w, float& x, float& y) const
 {
-	CHECK(focalLengthIndex_X == focalLengthIndex_Y);
-	CHECK(focalLengthIndex_X < params.size());
-	CHECK(principalPointIndex_X < params.size());
-	CHECK(principalPointIndex_Y < params.size());
+	Check(focalLengthIndex_X == focalLengthIndex_Y);
+	Check(focalLengthIndex_X < params.size());
+	Check(principalPointIndex_X < params.size());
+	Check(principalPointIndex_Y < params.size());
 
 	// 提取相机参数
 	const double f = params[focalLengthIndex_X];
@@ -151,12 +151,31 @@ void CSimpleRadialCameraModel::CameraToImage(const vector<double>& params, float
 	x = f * x + c1;
 	y = f * y + c2;
 }
+template <typename T>
+void CSimpleRadialCameraModel::CameraToImage(const T* params, T u, T v, T w, T* x, T* y)
+{
+	const double f = params[0];
+	const double c1 = params[1];
+	const double c2 = params[2];
+	u /= w;
+	v /= w;
+	// 畸变引入
+	double du, dv;
+	Distortion(&params[3], u, v, &du, &dv);
+	*x = u + du;
+	*y = v + dv;
+
+	// 转换到图像坐标系
+	*x = f * (*x) + c1;
+	*y = f * (*y) + c2;
+
+}
 void CSimpleRadialCameraModel::ImageToCamera(const vector<double>& params, float x, float y, float& u, float& v, float& w) const
 {
-	CHECK(focalLengthIndex_X == focalLengthIndex_Y);
-	CHECK(focalLengthIndex_X < params.size());
-	CHECK(principalPointIndex_X < params.size());
-	CHECK(principalPointIndex_Y < params.size());
+	Check(focalLengthIndex_X == focalLengthIndex_Y);
+	Check(focalLengthIndex_X < params.size());
+	Check(principalPointIndex_X < params.size());
+	Check(principalPointIndex_Y < params.size());
 
 	// 提取相机参数
 	const float f = params[focalLengthIndex_X];
@@ -173,12 +192,12 @@ void CSimpleRadialCameraModel::ImageToCamera(const vector<double>& params, float
 }
 const vector<double> CSimpleRadialCameraModel::GetExtraParams(const vector<double>& params) const
 {
-	CHECK(params.size() > 3);
+	Check(params.size() > 3);
 	return { params[3] };
 }
 void CSimpleRadialCameraModel::Distortion(const vector<double>& extraParams, double u, double v, double& du, double& dv) const
 {
-	CHECK(extraParams.size() == 1);
+	Check(extraParams.size() == 1);
 
 	const double k = extraParams[0];
 	const double u2 = u * u;
@@ -187,4 +206,16 @@ void CSimpleRadialCameraModel::Distortion(const vector<double>& extraParams, dou
 	const double radial = k * r2;
 	du = u * radial;
 	dv = v * radial;
+}
+template <typename T>
+static void CSimpleRadialCameraModel::Distortion(const T* extraParams, T u, T v, T* du, T* dv)
+{
+	const T k = extraParams[0];
+
+	const T u2 = u * u;
+	const T v2 = v * v;
+	const T r2 = u2 + v2;
+	const T radial = k * r2;
+	*du = u * radial;
+	*dv = v * radial;
 }

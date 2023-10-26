@@ -42,13 +42,13 @@ struct CPoint2D :public Eigen::Vector2d
 		size_t id;
 
 		in >> ch;
-		CHECK(ch == '{');
+		Check(ch == '{');
 
 		in >> x_val >> ch >> y_val;
-		CHECK(ch == ',');
+		Check(ch == ',');
 
 		in >> ch >> ch >> ch;
-		CHECK(ch == '{');
+		Check(ch == '{');
 
 		in >> id;
 
@@ -95,7 +95,7 @@ struct CKeypoint final :public cv::KeyPoint
 	}
 	inline CKeypoint(float x, float y, float scale, float orientation)
 	{
-		CHECK(scale >= 0);
+		Check(scale >= 0);
 		pt.x = x;
 		pt.y = y;
 		size = scale;        // scale尺度
@@ -124,7 +124,7 @@ struct CKeypoint final :public cv::KeyPoint
 	// 根据坐标, 缩放, 旋转, 剪切属性来生成关键点
 	inline void FromShapeParams(float x, float y, float scaleX, float scaleY, float orientation, float shear)
 	{
-		CHECK(scaleX >= 0 && scaleY >= 0);
+		Check(scaleX >= 0 && scaleY >= 0);
 		pt.x = x;
 		pt.y = y;
 		a11 = scaleX * std::cos(orientation);
@@ -137,7 +137,7 @@ struct CKeypoint final :public cv::KeyPoint
 
 	inline void Rescale(float scale)
 	{
-		CHECK(scale > 0);
+		Check(scale > 0);
 		pt.x *= scale;
 		pt.y *= scale;
 		a11 *= scale;
@@ -150,7 +150,7 @@ struct CKeypoint final :public cv::KeyPoint
 	}
 	inline void Rescale(float scaleX, float scaleY)
 	{
-		CHECK(scaleX > 0 && scaleY > 0);
+		Check(scaleX > 0 && scaleY > 0);
 		pt.x *= scaleX;
 		pt.y *= scaleY;
 		a11 *= scaleX;
@@ -207,39 +207,39 @@ struct CKeypoint final :public cv::KeyPoint
 
 		// 读取第一个 '{'
 		in >> ch;
-		CHECK(ch == '{');
+		Check(ch == '{');
 
 		// 读取 pt.x, pt.y
 		in >> x_val >> ch >> y_val;
-		CHECK(ch == ',');
+		Check(ch == ',');
 
 		// 读取第一个 '}'
 		in >> ch;
-		CHECK(ch == '}');
+		Check(ch == '}');
 
 		// 跳过逗号并读取第二个 '{'
 		in >> ch >> ch;
-		CHECK(ch == '{');
+		Check(ch == '{');
 
 		// 读取 size, angle
 		in >> sz >> ch >> ang;
-		CHECK(ch == ',');
+		Check(ch == ',');
 
 		// 读取第二个 '}'
 		in >> ch;
-		CHECK(ch == '}');
+		Check(ch == '}');
 
 		// 跳过逗号并读取第三个 '{'
 		in >> ch >> ch;
-		CHECK(ch == '{');
+		Check(ch == '{');
 
 		// 读取 a11, a12, a21, a22
 		in >> a11_val >> ch >> a12_val >> ch >> a21_val >> ch >> a22_val;
-		CHECK(ch == ',');
+		Check(ch == ',');
 
 		// 读取第三个 '}'
 		in >> ch;
-		CHECK(ch == '}');
+		Check(ch == '}');
 
 		// 赋值
 		pt.x = x_val;
@@ -293,13 +293,13 @@ struct CSIFTMatch
 		size_t idx1, idx2;
 
 		in >> ch;
-		CHECK(ch == '{');
+		Check(ch == '{');
 
 		in >> idx1 >> ch >> idx2;
-		CHECK(ch == ',');
+		Check(ch == ',');
 
 		in >> ch;
-		CHECK(ch == '}');
+		Check(ch == '}');
 
 		point2DIndex1 = idx1;
 		point2DIndex2 = idx2;

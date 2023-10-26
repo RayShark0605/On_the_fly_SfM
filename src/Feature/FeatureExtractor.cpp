@@ -4,15 +4,15 @@ using namespace std;
 
 CSIFTCPUExtractor::CSIFTCPUExtractor(const CSIFTExtractionOptions& options) :sift(nullptr, &vl_sift_delete)
 {
-	options.Check();
-	CHECK(!options.isEstimateAffineShape);
-	CHECK(!options.isDomainSizePooling);
+	options.CheckOptions();
+	Check(!options.isEstimateAffineShape);
+	Check(!options.isDomainSizePooling);
 	this->options = options;
 }
 bool CSIFTCPUExtractor::Extract(const string& imagePath, CKeypoints& keypoints, CSIFTDescriptors& descriptors)
 {
 #ifdef SIFT_Use_OpenCV
-    CHECK(IsFileExists(imagePath));
+    Check(IsFileExists(imagePath));
     cv::Mat image = cv::imread(imagePath, cv::IMREAD_GRAYSCALE);
     if (image.empty())
     {
@@ -33,7 +33,7 @@ bool CSIFTCPUExtractor::Extract(const string& imagePath, CKeypoints& keypoints, 
 }
 bool CSIFTCPUExtractor::Extract_VLFeat(const std::vector<uchar>& imageData, size_t width, size_t height, CKeypoints& keypoints, CSIFTDescriptors& descriptors)
 {
-    CHECK(imageData.size() == width * height); // 确保是灰度影像数据
+    Check(imageData.size() == width * height); // 确保是灰度影像数据
 
     // 如果sift对象不存在或尺寸不对, 就重新创建一个
     if (!sift || sift->width != width || sift->height != height)
@@ -157,7 +157,7 @@ bool CSIFTCPUExtractor::Extract_VLFeat(const std::vector<uchar>& imageData, size
                 }
                 else
                 {
-                    CHECK(false, "Normalization type not supported");
+                    Check(false, "Normalization type not supported");
                 }
 
                 // 转换描述子到无符号字节格式并存储
@@ -234,7 +234,7 @@ bool CSIFTCPUExtractor::Extract_OpenCV(const cv::Mat& image, CKeypoints& keypoin
         return false;
     }
     size_t numFeatures = keypoints.size();
-    CHECK(descriptors.type() == CV_32F && descriptors.cols == 128 && descriptors.rows == numFeatures, "Invalid input descriptors. Must be of type CV_32F and have 128 columns.");
+    Check(descriptors.type() == CV_32F && descriptors.cols == 128 && descriptors.rows == numFeatures, "Invalid input descriptors. Must be of type CV_32F and have 128 columns.");
     
     // 将OpenCV格式的特征点和描述子格式转换成本程序的格式
     keypoints_Output.resize(numFeatures);
@@ -260,13 +260,13 @@ bool CSIFTCPUExtractor::Extract_OpenCV(const cv::Mat& image, CKeypoints& keypoin
         }
         else
         {
-            CHECK(false, "Normalization type not supported");
+            Check(false, "Normalization type not supported");
         }
 
         for (int c = 0; c < 128; c++)
         {
             float originValue = row.at<float>(0, c);
-            CHECK(originValue >= 0 && originValue <= 0.5);
+            Check(originValue >= 0 && originValue <= 0.5);
             const float scaledValue = round(512.0f * originValue);
             descriptors_Output(i, c) = TruncateCast<float, uint8_t>(scaledValue);
         }
@@ -276,9 +276,9 @@ bool CSIFTCPUExtractor::Extract_OpenCV(const cv::Mat& image, CKeypoints& keypoin
 
 CSIFTGPUExtractor::CSIFTGPUExtractor(const CSIFTExtractionOptions& options)
 {
-    options.Check();
-    CHECK(!options.isEstimateAffineShape);
-    CHECK(!options.isDomainSizePooling);
+    options.CheckOptions();
+    Check(!options.isEstimateAffineShape);
+    Check(!options.isDomainSizePooling);
     this->options = options;
 
     vector<const char*> siftGPU_Args;
@@ -327,7 +327,7 @@ CSIFTGPUExtractor::CSIFTGPUExtractor(const CSIFTExtractionOptions& options)
     siftGPU.ParseParam(siftGPU_Args.size(), siftGPU_Args.data());
     siftGPU.gpu_index = cudaDeviceIndex;
 
-    CHECK(siftGPU.VerifyContextGL() == SiftGPU::SIFTGPU_FULL_SUPPORTED);
+    Check(siftGPU.VerifyContextGL() == SiftGPU::SIFTGPU_FULL_SUPPORTED);
 }
 bool CSIFTGPUExtractor::Extract(const std::string& imagePath, CKeypoints& keypoints, CSIFTDescriptors& descriptors)
 {
@@ -342,8 +342,8 @@ bool CSIFTGPUExtractor::Extract(const std::string& imagePath, CKeypoints& keypoi
 }
 bool CSIFTGPUExtractor::Extract_SIFTGPU(const std::vector<uchar>& imageData, size_t width, size_t height, CKeypoints& keypoints, CSIFTDescriptors& descriptors)
 {
-    CHECK(imageData.size() == width * height); // 确保是灰度影像数据
-    CHECK(options.maxImageSize * 2 == siftGPU.GetMaxDimension());
+    Check(imageData.size() == width * height); // 确保是灰度影像数据
+    Check(options.maxImageSize * 2 == siftGPU.GetMaxDimension());
 
     const int code = siftGPU.RunSIFT(width, height, imageData.data(), GL_LUMINANCE, GL_UNSIGNED_BYTE);
     if (code != 1)
@@ -371,7 +371,7 @@ bool CSIFTGPUExtractor::Extract_SIFTGPU(const std::vector<uchar>& imageData, siz
     }
     else
     {
-        CHECK(false, "Normalization type not supported");
+        Check(false, "Normalization type not supported");
     }
     descriptors = SIFTDescriptorsFloatToUnsignedChar(descriptorsFloat);
     ExtractTopScaleFeatures(keypoints, descriptors, options.maxNumFeatures);

@@ -130,12 +130,12 @@ public:
 		const auto it = registeredModels.find(modelID);
 		if (isRegistered)
 		{
-			CHECK(it == registeredModels.end());
+			Check(it == registeredModels.end());
 			registeredModels.insert(modelID);
 		}
 		else
 		{
-			CHECK(it != registeredModels.end());
+			Check(it != registeredModels.end());
 			registeredModels.erase(it);
 		}
 	}
@@ -146,12 +146,12 @@ public:
 	}
 	inline const CKeypoint& GetKeypoint(size_t point2DID) const
 	{
-		CHECK(point2DID < keypoints.size());
+		Check(point2DID < keypoints.size());
 		return keypoints[point2DID];
 	}
 	inline CKeypoint& GetKeypoint(size_t point2DID)
 	{
-		CHECK(point2DID < keypoints.size());
+		Check(point2DID < keypoints.size());
 		return keypoints[point2DID];
 	}
 	inline void SetPoints2D(const CKeypoints& keypoints)
@@ -186,9 +186,9 @@ public:
 	
 	inline size_t GetPoint3DID(size_t point2DID, size_t modelID) const
 	{
-		CHECK(point2DID < correspondences.size());
+		Check(point2DID < correspondences.size());
 		const auto it = correspondences[point2DID].second.find(modelID);
-		CHECK(it != correspondences[point2DID].second.end());
+		Check(it != correspondences[point2DID].second.end());
 		return it->second;
 	}
 
@@ -243,7 +243,7 @@ public:
 	// 获取POS(世界坐标系到相机坐标系的刚体变换)
 	inline const CRigid3D& GetWorldToCamera(size_t modelID) const
 	{
-		CHECK(registeredModels.find(modelID) != registeredModels.end());
+		Check(registeredModels.find(modelID) != registeredModels.end());
 		const auto it = worldToCamera.find(modelID);
 		if (it != worldToCamera.end())
 		{
@@ -253,7 +253,7 @@ public:
 	}
 	inline CRigid3D& GetWorldToCamera(size_t modelID)
 	{
-		CHECK(registeredModels.find(modelID) != registeredModels.end());
+		Check(registeredModels.find(modelID) != registeredModels.end());
 		const auto it = worldToCamera.find(modelID);
 		if (it != worldToCamera.end())
 		{
@@ -266,7 +266,7 @@ public:
 	// 获取POS的先验值(例如从EXIF陀螺仪标签得到)
 	inline const CRigid3D& GetWorldToCameraPrior(size_t modelID) const
 	{
-		CHECK(registeredModels.find(modelID) != registeredModels.end());
+		Check(registeredModels.find(modelID) != registeredModels.end());
 		const auto it = worldToCameraPrior.find(modelID);
 		if (it != worldToCameraPrior.end())
 		{
@@ -277,7 +277,7 @@ public:
 	}
 	inline CRigid3D& GetWorldToCameraPrior(size_t modelID)
 	{
-		CHECK(registeredModels.find(modelID) != registeredModels.end());
+		Check(registeredModels.find(modelID) != registeredModels.end());
 		const auto it = worldToCameraPrior.find(modelID);
 		if (it != worldToCameraPrior.end())
 		{
@@ -310,7 +310,7 @@ public:
 	// 是否存在另一幅影像中的2D点与该2D点共同观测到对应的3D点
 	inline bool IsPoint3DVisible(size_t modelID, size_t point2DIndex) const
 	{
-		CHECK(point2DIndex < numCorrExistPoint3D.size());
+		Check(point2DIndex < numCorrExistPoint3D.size());
 		const auto it = numCorrExistPoint3D[point2DIndex].find(modelID);
 		if (it == numCorrExistPoint3D[point2DIndex].end())
 		{
@@ -349,7 +349,7 @@ public:
 	// 表示当前影像的第thisImagePoint2DID号2D点, 与imageID号影像的第point2DID号2D点是同名点
 	inline void AddCorrespondence(size_t thisImagePoint2DID, size_t imageID, size_t point2DID)
 	{
-		CHECK(thisImagePoint2DID < keypoints.size() && keypoints.size() == correspondences.size());
+		Check(thisImagePoint2DID < keypoints.size() && keypoints.size() == correspondences.size());
 		if (correspondences[thisImagePoint2DID].first.empty()) // 当前影像的thisImagePoint2DID号2D点还没有任何一个响应
 		{
 			numObservations++;
