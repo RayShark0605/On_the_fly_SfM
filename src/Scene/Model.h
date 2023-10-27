@@ -64,7 +64,7 @@ public:
 	{
 		return points3D.find(point3DID) != points3D.end();
 	}
-	size_t AddPoint3D(const Eigen::Vector3d& XYZ, const CTrack& track, const Eigen::Vector3ub& color);
+	size_t AddPoint3D(const Eigen::Vector3d& XYZ, const CTrack& track, const Eigen::Vector3ub& color = Eigen::Vector3ub(0, 0, 0));
 
 	inline size_t GetNumImagePairs() const noexcept
 	{

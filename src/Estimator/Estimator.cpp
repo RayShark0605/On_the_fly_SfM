@@ -1,8 +1,8 @@
 #include "../Base/Base.h"
 #include "../Base/Math.h"
+#include "../Geometry/Triangulation.h"
 
 #include "Estimator.h"
-#include "../Geometry/Triangulation.h"
 
 using namespace std;
 

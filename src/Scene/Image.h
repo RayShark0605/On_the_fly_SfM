@@ -245,11 +245,8 @@ public:
 	{
 		Check(registeredModels.find(modelID) != registeredModels.end());
 		const auto it = worldToCamera.find(modelID);
-		if (it != worldToCamera.end())
-		{
-			return it->second;
-		}
-		return CRigid3D(Eigen::Quaterniond::Identity(), Eigen::Vector3d::Zero());
+		Check(it != worldToCamera.end());
+		return it->second;
 	}
 	inline CRigid3D& GetWorldToCamera(size_t modelID)
 	{

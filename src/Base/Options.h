@@ -230,12 +230,32 @@ enum class CTriangulationResidualType
 // 三角测量选项参数
 struct CEstimateTriangulationOptions final :public CBaseOptions
 {
-	double minTriAngle = 1.5 * M_PI / 180.0;
+	double minTriAngle_Deg = 1.5;
+	int maxTransitivity = 1;                  // 寻找对应关系时的最大传递性
+	double createMaxAngleError = 2;           // 创建新三角测量时的最大角度误差
+	double continueMaxAngleError = 2;         // 继续现有三角测量时的最大角度误差
+	double mergeMaxReprojectionError = 4;     // 合并三角测量时的最大像素重投影误差
+	double completeMaxReprojectionError = 4;  // 完成现有三角测量时的最大重投影误差
+	int completeMaxTransitivity = 5;          // 轨迹完成时的最大传递性
+	double retriangulateMaxAngleError = 5.0;  // 重新三角测量时的最大角度误差
+	double retriangulateMinRatio = 0.2;       // 重新三角测量时, 影像对之间共同三角测量与对应关系数量的最小比例
+	int retriangulateMaxTrials = 1;           // 重新三角测量一个影像对的最大尝试次数
+	bool isIgnoreTwoViewTracks = true;        // 是否忽略两视图轨迹
+
 	CTriangulationResidualType residualType = CTriangulationResidualType::CAngularError;
 	CRANSACOptions ransacOptions;
 	inline void CheckOptions() const override
 	{
-		Check(minTriAngle >= 0);
+		Check(minTriAngle_Deg > 0);
+		Check(maxTransitivity >= 0);
+		Check(createMaxAngleError > 0);
+		Check(continueMaxAngleError > 0);
+		Check(mergeMaxReprojectionError > 0);
+		Check(completeMaxReprojectionError > 0);
+		Check(completeMaxTransitivity >= 0);
+		Check(retriangulateMaxAngleError > 0);
+		Check(retriangulateMinRatio >= 0 && retriangulateMinRatio <= 1);
+		Check(retriangulateMaxTrials >= 0);
 		ransacOptions.CheckOptions();
 	}
 };

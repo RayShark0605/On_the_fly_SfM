@@ -3,7 +3,6 @@
 #include "Rigid3D.h"
 #include "Sim3D.h"
 #include "../Base/Math.h"
-#include "Triangulation.h"
 
 // 通过将给定矩阵的奇异值设为1, 计算具有最接近的Frobenius范数的最接近的旋转矩阵
 Eigen::Matrix3d ComputeClosestRotationMatrix(const Eigen::Matrix3d& matrix);

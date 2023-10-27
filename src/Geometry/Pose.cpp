@@ -1,4 +1,6 @@
 #include "Pose.h"
+
+#include "Triangulation.h"
 using namespace std;
 
 Eigen::Matrix3d ComputeClosestRotationMatrix(const Eigen::Matrix3d& matrix)
