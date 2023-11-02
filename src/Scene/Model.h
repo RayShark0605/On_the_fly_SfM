@@ -42,6 +42,10 @@ public:
 	{
 		return regImageIDs.size();
 	}
+	inline const std::unordered_set<size_t>& GetAllRegImages() const noexcept
+	{
+		return regImageIDs;
+	}
 	
 	inline size_t GetPoints3DNum() const noexcept
 	{

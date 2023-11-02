@@ -118,7 +118,7 @@ vector<double> CalculateTriangulationAngles(const Eigen::Vector3d& projectionCen
 	}
 	return angles;
 }
-bool EstimateTriangulation(const CEstimateTriangulationOptions& options, const vector<CTriangulationPoint>& points, const vector<CTriangulationPose>& poses, vector<char>& inlierMask, Eigen::Vector3d& XYZ)
+bool EstimateTriangulation(const CTriangulationOptions& options, const vector<CTriangulationPoint>& points, const vector<CTriangulationPose>& poses, vector<char>& inlierMask, Eigen::Vector3d& XYZ)
 {
 	Check(points.size() >= 2 && points.size() == poses.size());
 	options.CheckOptions();
@@ -213,7 +213,7 @@ size_t CTriangulator::CompleteImage(const COptions& options, size_t imageID)
 		return 0;
 	}
 
-	CEstimateTriangulationOptions triOptions;
+	CTriangulationOptions triOptions;
 	triOptions.residualType = CTriangulationResidualType::CReprojectionError;
 	triOptions.ransacOptions.maxError = options.estimateTriangulationOptions.completeMaxReprojectionError;
 	triOptions.ransacOptions.confidence = 0.9999;
@@ -534,7 +534,7 @@ size_t CTriangulator::Create(const COptions& options, const vector<CCorrData>& c
 		poseData[i].camera = corrData.camera;
 	}
 
-	CEstimateTriangulationOptions triangleOptions;
+	CTriangulationOptions triangleOptions;
 	triangleOptions.minTriAngle_Deg = options.estimateTriangulationOptions.minTriAngle_Deg;
 	triangleOptions.residualType = CTriangulationResidualType::CAngularError;
 	triangleOptions.ransacOptions.maxError = DegToRad(options.estimateTriangulationOptions.createMaxAngleError);

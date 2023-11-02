@@ -12,7 +12,11 @@ class CVisibilityPyramid final
 public:
 	CVisibilityPyramid() noexcept
 	{
-		CVisibilityPyramid(0, 0, 0);
+		width = 0;
+		height = 0;
+		score = 0;
+		maxScore = 0;
+		pyramid.clear();
 	}
 	CVisibilityPyramid(size_t numLevels, size_t width, size_t height) noexcept
 	{

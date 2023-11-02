@@ -139,6 +139,10 @@ public:
 			registeredModels.erase(it);
 		}
 	}
+	inline size_t GetNumRegisteredModels() const
+	{
+		return registeredModels.size();
+	}
 
 	inline size_t GetNumPoints2D() const noexcept
 	{
@@ -354,6 +358,9 @@ public:
 		correspondences[thisImagePoint2DID].first[imageID] = point2DID;
 		numCorrespondences++;
 	}
+	
+	// 获取该影像与otherImage之间的所有连接关系, 会返回所有可能的连接关系, 即使这两张影像没有做过影像匹配
+	CSIFTMatches GetCorrespondences(const CImage& otherImage) const;
 
 	// 获取响应数据
 	const std::pair<CConjugatePoints, CObjectPoints>& GetCorrespondences(size_t point2DID) const;

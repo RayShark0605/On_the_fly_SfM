@@ -46,7 +46,6 @@ public:
 	// @return           可能的相机姿态. 实际类型应该是vector<Eigen::Matrix3x4d>
 	std::vector<std::any> Estimate(const std::vector<std::any>& points2D, const std::vector<std::any>& points3D) override;
 	std::vector<Eigen::Matrix3x4d> Estimate(const std::vector<Eigen::Vector2d>& points2D, const std::vector<Eigen::Vector3d>& points3D) const;
-	CP3PEstimateRANSACReport EstimateRANSAC(const std::vector<Eigen::Vector2d>& points2D, const std::vector<Eigen::Vector3d>& points3D, const CRANSACOptions& options, CSupportMeasurer* supportMeasurer = nullptr, CSampler* sampler = nullptr) const;
 	CP3PEstimateRANSACReport EstimateLoRANSAC(const std::vector<Eigen::Vector2d>& points2D, const std::vector<Eigen::Vector3d>& points3D, const CRANSACOptions& options, CSupportMeasurer* supportMeasurer = nullptr, CSampler* sampler = nullptr) const;
 
 	// 给定一组2D-3D点对应关系和一个投影矩阵, 计算平方重投影误差

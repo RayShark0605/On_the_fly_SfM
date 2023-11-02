@@ -92,7 +92,7 @@ public:
 		return constantCameraPoses.find(imageID) != constantCameraPoses.end();
 	}
 
-	// 设置位姿的平移部分, 因此因此常量姿态的索引可能在[0, 1, 2]范围内, 并且必须是唯一的. 注意, 在调用这些方法之前, 必须先添加相应的图像
+	// 设置位姿的平移部分, 因此常量姿态的索引可能在[0, 1, 2]范围内, 并且必须是唯一的. 注意, 在调用这些方法之前, 必须先添加相应的图像
 	inline void SetConstantCameraPositions(size_t imageID, const std::vector<int>& IDs)
 	{
 		Check(!IDs.empty() && IDs.size() <= 3);

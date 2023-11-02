@@ -66,6 +66,41 @@ private:
 	const double observedY;
 };
 
+// 用于可变相机位姿和标定参数, 固定3D点的平差代价函数
+class CReprojectionErrorConstantPoint3DCostFunction
+{
+public:
+	CReprojectionErrorConstantPoint3DCostFunction(const Eigen::Vector2d& point2D, const Eigen::Vector3d& point3D) : observedX(point2D(0)), observedY(point2D(1)), point3DX(point3D(0)), point3DY(point3D(1)), point3DZ(point3D(2)){}
+	static ceres::CostFunction* Create(const Eigen::Vector2d& point2D, const Eigen::Vector3d& point3D)
+	{
+		CReprojectionErrorConstantPoint3DCostFunction* reprojectionErrorConstantPoint3DCostFunction = new CReprojectionErrorConstantPoint3DCostFunction(point2D, point3D);
+		ceres::CostFunction* costFunction = new ceres::AutoDiffCostFunction<CReprojectionErrorConstantPoint3DCostFunction, 2, 4, 3, 4>(reprojectionErrorConstantPoint3DCostFunction);
+		return costFunction;
+	}
+	template <typename T>
+	bool operator()(const T* const worldToCameraRotation, const T* const worldToCameraTranslation, const T* const cameraParams, T* residuals) const
+	{
+		Eigen::Matrix<T, 3, 1> point3D;
+		point3D[0] = T(point3DX);
+		point3D[1] = T(point3DY);
+		point3D[2] = T(point3DZ);
+
+		const Eigen::Matrix<T, 3, 1> point3DInCamera = EigenQuaternionMap<T>(worldToCameraRotation) * point3D + EigenVector3Map<T>(worldToCameraTranslation);
+		CSimpleRadialCameraModel simpleRadialCameraModel;
+		simpleRadialCameraModel.CameraToImage(cameraParams, point3DInCamera[0], point3DInCamera[1], point3DInCamera[2], &residuals[0], &residuals[1]);
+		residuals[0] -= T(observedX);
+		residuals[1] -= T(observedY);
+		return true;
+	}
+
+private:
+	const double observedX;
+	const double observedY;
+	const double point3DX;
+	const double point3DY;
+	const double point3DZ;
+};
+
 
 inline void SetQuaternionManifold(ceres::Problem* problem, double* quatXYZW)
 {

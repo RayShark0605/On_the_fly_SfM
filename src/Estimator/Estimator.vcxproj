@@ -23,6 +23,7 @@
     <ClInclude Include="Common.h" />
     <ClInclude Include="CostFunction.h" />
     <ClInclude Include="Estimator.h" />
+    <ClInclude Include="Mapper.h" />
     <ClInclude Include="RANSAC.h" />
     <ClInclude Include="Sampler.h" />
     <ClInclude Include="SupportMeasurer.h" />
@@ -31,6 +32,7 @@
     <ClCompile Include="BundleAdjustment.cpp" />
     <ClCompile Include="Common.cpp" />
     <ClCompile Include="Estimator.cpp" />
+    <ClCompile Include="Mapper.cpp" />
     <ClCompile Include="RANSAC.cpp" />
     <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="SupportMeasurer.cpp" />

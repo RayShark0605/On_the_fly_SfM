@@ -189,10 +189,6 @@ size_t CRAMDatabase::AddImage(const CImage& image)
 	images[imageID] = image;
 	images[imageID].SetImageID(imageID);
 
-	const size_t cameraID = images[imageID].GetCameraID();
-	Check(cameras.find(cameraID) != cameras.end());
-	images[imageID].Setup(cameras[cameraID]);
-
 	return imageID;
 }
 
@@ -470,10 +466,24 @@ void CRAMDatabase::AddTwoViewGeometry(size_t imageID1, size_t imageID2, const CT
 	Check(images.find(imageID2) != images.end(), (boost::format("This image does not exist! imageID = %1%") % imageID2).str());
 	Check(imageID1 < imageID2);
 	this->twoViewGeometries[imageID1][imageID2] = twoViewGeometry;
+
 	for (const CSIFTMatch& match : twoViewGeometry.inlierMatches)
 	{
-		images[imageID1].AddCorrespondence(match.point2DIndex1, imageID2, match.point2DIndex2);
-		images[imageID2].AddCorrespondence(match.point2DIndex2, imageID1, match.point2DIndex1);
+		const pair<size_t, size_t> pair1 = { imageID1, match.point2DIndex1 };
+		const pair<size_t, size_t> pair2 = { imageID2, match.point2DIndex2 };
+		disjoinSet.Unite(pair1, pair2);
+
+		const vector<pair<size_t, size_t>> sameSet = disjoinSet.GetConnectedComponents(pair1);
+		for (const pair<size_t, size_t>& x : sameSet)
+		{
+			for (const pair<size_t, size_t>& y : sameSet)
+			{
+				if (x.first != y.first)
+				{
+					images[x.first].AddCorrespondence(x.second, y.first, y.second);
+				}
+			}
+		}
 	}
 }
 size_t CRAMDatabase::GetTwoViewGeometryImagesNum(size_t imageID) const

@@ -134,6 +134,65 @@ private:
 
 	// key:影像ID(较小的那个), value.key:影像ID(较大的那个), value.value:两张影像之间的双视几何关系
 	tbb::concurrent_unordered_map<size_t, tbb::concurrent_unordered_map<size_t, CTwoViewGeometry>> twoViewGeometries;
+
+	// 并查集
+	class DisjointSet
+	{
+	public:
+		// 查找元素x的根节点, 使用路径压缩的优化机制
+		std::pair<size_t, size_t> Find(const std::pair<size_t, size_t>& x)
+		{
+			if (parent.find(x) == parent.end()) // 如果x不在parent中, 将其作为一个独立集合加入
+			{
+				parent[x] = x; // x的父节点是其自身
+				rank[x] = 0;   // x的秩初始化为0
+			}
+
+			// 路径压缩: 如果x不是自己的父节点, 递归地找到其根节点并更新父节点
+			if (parent[x] != x)
+			{
+				parent[x] = Find(parent[x]); // 路径压缩
+			}
+			return parent[x]; // 返回x的根节点
+		}
+		// 合并元素x和y所在的集合
+		void Unite(std::pair<size_t, size_t> x, std::pair<size_t, size_t> y)
+		{
+			std::pair<size_t, size_t> xRoot = Find(x); // 找到x的根节点
+			std::pair<size_t, size_t> yRoot = Find(y); // 找到y的根节点
+
+			if (xRoot != yRoot) // 如果x和y不在同一个集合中, 则需要合并
+			{
+				if (rank[xRoot] < rank[yRoot]) // 按秩合并: 将秩较小的根节点的父节点指向秩较大的根节点
+				{
+					std::swap(xRoot, yRoot);
+				}
+				parent[yRoot] = xRoot; // y的根节点现在指向x的根节点
+				if (rank[xRoot] == rank[yRoot])
+				{
+					rank[xRoot]++; // 如果秩相等, 则新的根节点的秩加1
+				}
+			}
+		}
+		// 获取所有具有相同根节点的元素集合
+		std::vector<std::pair<size_t, size_t>> GetConnectedComponents(const std::pair<size_t, size_t>& x)
+		{
+			std::vector<std::pair<size_t, size_t>> connectedComponents;
+			for (const auto& p : parent) // 遍历所有元素, 将与x属于同一集合的元素加入列表
+			{
+				if (Find(p.first) == Find(x)) // 与x同根的元素
+				{
+					connectedComponents.push_back(p.first);
+				}
+			}
+			return connectedComponents;
+		}
+
+	private:	
+		std::unordered_map<std::pair<size_t, size_t>, std::pair<size_t, size_t>, MatchPairHash> parent; // 存储每个元素的父节点
+		std::unordered_map<std::pair<size_t, size_t>, int, MatchPairHash> rank;                         // 存储每个根节点的秩
+	};
+	DisjointSet disjoinSet;
 };
 
 

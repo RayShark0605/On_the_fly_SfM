@@ -228,7 +228,7 @@ enum class CTriangulationResidualType
 	CReprojectionError
 };
 // 三角测量选项参数
-struct CEstimateTriangulationOptions final :public CBaseOptions
+struct CTriangulationOptions final :public CBaseOptions
 {
 	double minTriAngle_Deg = 1.5;
 	int maxTransitivity = 1;                  // 寻找对应关系时的最大传递性
@@ -260,6 +260,12 @@ struct CEstimateTriangulationOptions final :public CBaseOptions
 	}
 };
 
+enum class CNextImageSelectionMethod
+{
+	CMaxVisiblePointsNum,
+	CMaxVisiblePointsRatio,
+	CMinUncertainty
+};
 // 重建选项参数
 struct CReconstructionOptions final :public CBaseOptions
 {
@@ -273,12 +279,66 @@ struct CReconstructionOptions final :public CBaseOptions
 	double maxFocalLengthRatio = 10;
 	double maxExtraParam = 1;
 
+	size_t initMinNumInliers = 100;                   // 初始影像对的最小内点数
+	double initMaxError = 4;                          // 初始影像对做双视几何估计的最大像素误差
+	double initMaxForwardMotion = 0.95;               // 初始影像对的最大前向运动
+	double initMinTriAngle = 16;                      // 初始影像对的最小交会角(度)
+	size_t initMaxRegTrials = 2;                      // 一张影像最多进行多少次初始化尝试
+
+	double absPoseMaxError = 12;                      // 绝对位姿估计中的最大重投影误差
+	size_t absPoseMinNumInliers = 30;                 // 绝对位姿估计中的最小内点数
+	double absPoseMinInlierRatio = 0.25;              // 绝对位姿估计中的最小内点比例
+	bool isEstimateAbsPoseFocalLength = false;        // 绝对位姿估计中是否估计焦距
+	double absPoseMinFocalLengthRatio = 0.1;          // 绝对位姿估计中在给定相机的焦距周围进行离散焦距采样的最小焦距比率
+	double absPoseMaxFocalLengthRatio = 10;           // 绝对位姿估计中在给定相机的焦距周围进行离散焦距采样的最大焦距比率
+	size_t absPoseNumFocalLengthSamples = 30;         // 绝对位姿估计中用于焦距估计的离散样本数量
+	CRANSACOptions absPoseRANSACOoptions;             // 绝对位姿估计中用于P3P RANSAC的选项
+
+	double absPoseRefineGradientTolerance = 1;        // 绝对位姿精化中的收敛准则
+	size_t absPoseRefineMaxNumIterations = 100;       // 绝对位姿精化中的求解器的最大迭代次数
+	double absPoseRefineLossFunctionScale = 1;        // 绝对位姿精化中的损失函数缩放因子, 决定何时进行残差的鲁棒化
+	bool isRefineAbsPoseFocalLength = true;           // 绝对位姿精化中是否优化焦距
+	bool isRefineAbsPoseExtraParams = true;           // 绝对位姿精化中是否优化额外相机参数
+
+	size_t numLocalBundleAdjustmentImages = 6;        // 局部平差的影像数量
+	double minTriAngleLocalBundleAdjustment = 6;      // 局部平差中选择影像的最小交会角
+
+	double filterMaxReprojectionError = 4;            // 观测值的最大像素重投影误差
+	double filterMinTriAngle = 1.5;                   // 稳定3D点的最小交会角
+	size_t maxRegTrials = 3;                          // 注册影像的最大尝试次数
+	bool isFixingExistingImages = false;              // 如果提供了初始模型, 是否固定其已有影像的姿态
+
+	// 选择下一张最优待注册影像的方法
+	CNextImageSelectionMethod nextImageSelectionMethod = CNextImageSelectionMethod::CMinUncertainty;
 	inline void CheckOptions() const override
 	{
 		Check(minNumMatches > 0);
 		Check(maxModelOverlap > 0);
 		Check(minModelSize > 0);
 		Check(numInitialTrials > 0);
+		Check(initMinNumInliers > 0);
+		Check(initMaxError > 0);
+		Check(initMaxForwardMotion >= 0 && initMaxForwardMotion <= 1);
+		Check(initMinTriAngle >= 0);
+		Check(initMaxRegTrials >= 1);
+
+		Check(absPoseMaxError > 0);
+		Check(absPoseMinNumInliers > 0);
+		Check(absPoseMinInlierRatio >= 0 && absPoseMinInlierRatio <= 1);
+		Check(absPoseNumFocalLengthSamples > 0);
+		Check(absPoseMinFocalLengthRatio > 0);
+		Check(absPoseMaxFocalLengthRatio > 0);
+		Check(absPoseMinFocalLengthRatio < absPoseMaxFocalLengthRatio);
+		absPoseRANSACOoptions.CheckOptions();
+
+		Check(absPoseRefineGradientTolerance >= 0);
+		Check(absPoseRefineLossFunctionScale >= 0);
+
+		Check(numLocalBundleAdjustmentImages >= 2);
+		Check(minTriAngleLocalBundleAdjustment >= 0);
+		Check(filterMaxReprojectionError >= 0);
+		Check(filterMinTriAngle >= 0);
+		Check(maxRegTrials >= 1);
 	}
 };
 
@@ -348,7 +408,7 @@ struct COptions final : public CBaseOptions
 	CSIFTMatchingOptions SIFTMatchingOptions;
 	CRANSACOptions RANSACOptions;
 	CTwoViewGeometryOptions twoViewGeometryOptions;
-	CEstimateTriangulationOptions estimateTriangulationOptions;
+	CTriangulationOptions estimateTriangulationOptions;
 	CReconstructionOptions reconstructionOptions;
 	CBundleAdjustmentOptions bundleAdjustmentOptions;
 

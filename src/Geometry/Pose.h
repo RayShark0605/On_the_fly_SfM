@@ -38,3 +38,25 @@ bool CheckCheirality(const Eigen::Matrix3d& R, const Eigen::Vector3d& t, const s
 
 // 根据相机在旧世界坐标系下的位姿和新世界坐标系相对于旧世界坐标系的Sim3D变换, 计算相机在新世界坐标系下的位姿
 CRigid3D TransformCameraWorld(const CSim3D& oldWorldToNewWorld, const CRigid3D& oldWorldToCamera);
+
+// 使用2D-3D对应关系估计绝对姿态(可选地估计焦距)
+// @param options         选项
+// @param points2D        2D点
+// @param points3D        3D点
+// @param worldToCamera   估计的绝对相机姿态
+// @param camera          需要估计姿态的相机. 在原地修改以存储估计的焦距
+// @param numInliers      RANSAC中的内点数
+// @param inlierMask      2D-3D对应关系的内点掩码
+bool EstimateAbsolutePose(const COptions& options, const std::vector<Eigen::Vector2d>& points2D, const std::vector<Eigen::Vector3d>& points3D, CRigid3D& worldToCamera, CCamera& camera, size_t& numInliers, std::vector<char>& inlierMask);
+
+
+// 从2D-3D对应关系中精化绝对位姿(可选地精化焦距)
+//
+// @param options            选项
+// @param inlierMask         2D-3D对应关系的内点掩码
+// @param points2D           对应的2D点
+// @param points3D           对应的3D点
+// @param worldToCamera      精化后的绝对相机位姿
+// @param camera             需要估计姿态的相机. 在原地修改以存储估计的焦距
+// @param worldToCameraCov   6x6协方差矩阵(可选), 包括旋转(表现为坐标轴角度, 在切空间中)和平移项.
+bool RefineAbsolutePose(const COptions& options, const std::vector<char>& inlierMask, const std::vector<Eigen::Vector2d>& points2D, const std::vector<Eigen::Vector3d>& points3D, CRigid3D& worldToCamera, CCamera& camera, Eigen::Matrix6d* worldToCameraCov = nullptr);

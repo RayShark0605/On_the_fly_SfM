@@ -99,6 +99,9 @@ bool CBundleAdjuster::Solve(CModel& model)
     std::string solverError;
     Check(solverOptions.IsValid(&solverError), solverError);
     ceres::Solve(solverOptions, problem, &summary);
+
+    delete lossFunction;
+    delete problem;
     return true;
 }
 void CBundleAdjuster::Setup(CModel& model, ceres::LossFunction* lossFunction)

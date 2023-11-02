@@ -178,7 +178,7 @@ vector<Eigen::Matrix3x4d> CP3PEstimator::Estimate(const vector<Eigen::Vector2d>&
     }
     return models;
 }
-CP3PEstimateRANSACReport CP3PEstimator::EstimateRANSAC(const std::vector<Eigen::Vector2d>& X, const std::vector<Eigen::Vector3d>& Y, const CRANSACOptions& options, CSupportMeasurer* supportMeasurer, CSampler* sampler) const
+CP3PEstimateRANSACReport CP3PEstimator::EstimateLoRANSAC(const std::vector<Eigen::Vector2d>& X, const std::vector<Eigen::Vector3d>& Y, const CRANSACOptions& options, CSupportMeasurer* supportMeasurer = nullptr, CSampler* sampler = nullptr) const
 {
     // Step 1. 初始化. 检查输入向量大小, 初始化结果, 检查特殊情况
     Check(X.size() == Y.size());
@@ -202,17 +202,23 @@ CP3PEstimateRANSACReport CP3PEstimator::EstimateRANSAC(const std::vector<Eigen::
         sampler = new CRandomSampler(minNumSamples);
     }
 
+
     // Step 2. RANSAC主循环
     bool isAbort = false;
+    bool bestModelIsLocal = false;
     const double maxResidual = options.maxError * options.maxError; // 允许的最大残差(只有当残差不超过maxResidual, 才会被标记为内点)
 
-    std::vector<double> residuals(numSamples); // 模型与所有数据点的残差
+    std::vector<double> residuals; // 模型与所有数据点的残差
+    std::vector<double> bestLocalResiduals; // 模型与所有数据点的残差
+    std::vector<Eigen::Vector2d> XInlier;
+    std::vector<Eigen::Vector3d> YInlier;
     std::vector<Eigen::Vector2d> X_rand(minNumSamples);
     std::vector<Eigen::Vector3d> Y_rand(minNumSamples);
     sampler->Initialize(numSamples); // 初始化采样器
 
     CSupport bestSupport; // 当前得到的最好的支持度
     Eigen::Matrix3x4d bestModel;  // 当前得到的最好模型
+    CEPnPEstimator localEstimator;
 
     size_t maxNumTrials = std::min(options.maxNumTrials, sampler->GetMaxNumSamples()); // 确定最大迭代次数
     size_t dynamicMaxNumTrials = maxNumTrials;
@@ -226,23 +232,67 @@ CP3PEstimateRANSACReport CP3PEstimator::EstimateRANSAC(const std::vector<Eigen::
 
         sampler->GetSampleXY(X, Y, X_rand, Y_rand); // 从X和Y中以采样器内部的采样规则采样
         const std::vector<Eigen::Matrix3x4d> sampledModels = Estimate(X_rand, Y_rand); // 使用随机样本来估计模型
-
         for (const Eigen::Matrix3x4d& sampledModel : sampledModels)
         {
             Residuals(X, Y, sampledModel, residuals); // 对于每一个估计出的模型, 计算其与所有数据点的残差
             Check(residuals.size() == numSamples);
 
             const CSupport support = supportMeasurer->Evaluate(residuals, maxResidual); // 评估这个模型的支持度
-            if (supportMeasurer->Compare(support, bestSupport)) // 如果新的支持度比当前最好的支持度更好, 就更新最好的支持度和最好的模型
+
+            if (supportMeasurer->Compare(support, bestSupport)) // 如果新的支持度比当前最好的支持度更好, 就做局部优化
             {
                 bestSupport = support;
                 bestModel = sampledModel;
+                bestModelIsLocal = false;
 
-                // 根据最好的支持度动态地更新最大迭代次数
+                // 根据内点来局部估计更优模型
+                if (support.numInliers > minNumSamples && support.numInliers >= localEstimator.minNumSamples)
+                {
+                    // 迭代式局部优化来扩大内点集
+                    const size_t maxLocalTrials = 10;
+                    for (size_t localNumTrials = 0; localNumTrials < maxLocalTrials; localNumTrials++)
+                    {
+                        XInlier.clear();
+                        YInlier.clear();
+                        XInlier.reserve(numSamples);
+                        YInlier.reserve(numSamples);
+                        for (size_t i = 0; i < residuals.size(); i++)
+                        {
+                            if (residuals[i] <= maxResidual)
+                            {
+                                XInlier.push_back(X[i]);
+                                YInlier.push_back(Y[i]);
+                            }
+                        }
+                        const std::vector<Eigen::Matrix3x4d> localModels = localEstimator.Estimate(XInlier, YInlier);
+                        const size_t preBestNumInliers = bestSupport.numInliers;
+                        for (const Eigen::Matrix3x4d& localModel : localModels)
+                        {
+                            localEstimator.Residuals(X, Y, localModel, residuals);
+                            Check(residuals.size() == numSamples);
+                            const CSupport localSupport = supportMeasurer->Evaluate(residuals, maxResidual);
+
+                            // 检查局部优化模型是否更优
+                            if (supportMeasurer->Compare(localSupport, bestSupport))
+                            {
+                                bestSupport = localSupport;
+                                bestModel = localModel;
+                                bestModelIsLocal = true;
+                                std::swap(residuals, bestLocalResiduals); // 交换残差
+                            }
+                        }
+                        // 只有当内点集变多了从而有机会进一步优化时, 才继续迭代
+                        if (bestSupport.numInliers <= preBestNumInliers)
+                        {
+                            break;
+                        }
+
+                        //把残差再交换回来, 这样就可以在下一次局部优化的迭代中提取出最佳的内点集
+                        std::swap(residuals, bestLocalResiduals);
+                    }
+                }
                 dynamicMaxNumTrials = GetNumTrials(minNumSamples, bestSupport.numInliers, numSamples, options.confidence, options.maxIterNumTrialsMultiplier);
             }
-
-            // 如果达到动态更新后的最大迭代次数, 并且迭代次数超过了最小迭代次数，就提前终止算法
             if (report.numTrials >= dynamicMaxNumTrials && report.numTrials >= options.minNumTrials)
             {
                 isAbort = true;
@@ -266,16 +316,24 @@ CP3PEstimateRANSACReport CP3PEstimator::EstimateRANSAC(const std::vector<Eigen::
         }
         return report;
     }
-    Residuals(X, Y, report.model, residuals);
-    Check(residuals.size() == numSamples);
 
+    // 这将对最佳模型的残差进行两次计算, 但避免了对每个评估模型都复制和填充内点掩码, 这种方法其实更快
+    if (bestModelIsLocal)
+    {
+        localEstimator.Residuals(X, Y, report.model, residuals);
+    }
+    else
+    {
+        Residuals(X, Y, report.model, residuals);
+    }
+    Check(residuals.size() == numSamples);
     report.inlierMask.resize(numSamples);
+
     for (size_t i = 0; i < residuals.size(); i++) // 判断每个样本是否为内点
     {
         report.inlierMask[i] = (residuals[i] <= maxResidual);
     }
     report.isSuccess = true;
-
     if (isSamplerNull)
     {
         delete sampler;

@@ -31,7 +31,7 @@ std::vector<Eigen::Vector3d> TriangulateOptimalPoints(const Eigen::Matrix3x4d& w
 double CalculateTriangulationAngle(const Eigen::Vector3d& projectionCenter1, const Eigen::Vector3d& projectionCenter2, const Eigen::Vector3d& point3D);
 std::vector<double> CalculateTriangulationAngles(const Eigen::Vector3d& projectionCenter1, const Eigen::Vector3d& projectionCenter2, const std::vector<Eigen::Vector3d>& points3D);
 
-bool EstimateTriangulation(const CEstimateTriangulationOptions& options, const std::vector<CTriangulationPoint>& points, const std::vector<CTriangulationPose>& poses, std::vector<char>& inlierMask, Eigen::Vector3d& XYZ);
+bool EstimateTriangulation(const CTriangulationOptions& options, const std::vector<CTriangulationPoint>& points, const std::vector<CTriangulationPose>& poses, std::vector<char>& inlierMask, Eigen::Vector3d& XYZ);
 
 class CDatabase;
 class CModel;
